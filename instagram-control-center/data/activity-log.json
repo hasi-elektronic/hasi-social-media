@@ -1,5 +1,12 @@
 [
   {
+    "time": "2026-07-08T12:01:14.479Z",
+    "action": "customer-updated",
+    "status": "ok",
+    "customerId": "keby-shop",
+    "customerName": "Keby Shop"
+  },
+  {
     "time": "2026-07-08T10:04:42+02:00",
     "action": "publish-carousel",
     "status": "published",

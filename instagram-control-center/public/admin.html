@@ -152,7 +152,46 @@
       }
       .pill.green { background: #ecfdf3; color: #067647; }
       .pill.gray { background: #f2f4f7; color: #475467; }
+      .pill.orange { background: #fff7ed; color: #c2410c; }
+      .pill.red { background: #fef3f2; color: #b42318; }
       .small { font-size: 12px; color: var(--muted); }
+      .checklist {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px 10px;
+        margin-top: 12px;
+      }
+      .check-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .check-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--red);
+        flex: 0 0 auto;
+      }
+      .check-dot.ok { background: var(--green); }
+      .check-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px 12px;
+      }
+      .check-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        color: #344054;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .check-label input { width: auto; }
       form {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -228,8 +267,9 @@
           </div>
 
           <div class="card">
-            <h2>Kunde anlegen</h2>
+            <h2 id="formTitle">Kunde anlegen</h2>
             <form id="customerForm">
+              <input id="customerId" name="id" type="hidden">
               <div class="field">
                 <label for="company">Firma *</label>
                 <input id="company" name="company" required placeholder="z.B. Muster GmbH">
@@ -282,8 +322,34 @@
                 <label for="positioning">Positionierung</label>
                 <textarea id="positioning" name="positioning" placeholder="Wofuer steht der Kunde? Was soll Social Media verkaufen oder erklaeren?"></textarea>
               </div>
+              <div class="field full">
+                <label>Onboarding Checklist</label>
+                <div class="check-grid">
+                  <label class="check-label"><input id="profileComplete" name="profileComplete" type="checkbox"> Profil vollständig</label>
+                  <label class="check-label"><input id="brandComplete" name="brandComplete" type="checkbox"> Logo / Marke vollständig</label>
+                  <label class="check-label"><input id="productPhotos" name="productPhotos" type="checkbox"> Produktfotos vorhanden</label>
+                  <label class="check-label"><input id="productList" name="productList" type="checkbox"> Produktliste / Preise vorhanden</label>
+                  <label class="check-label"><input id="instagramBusiness" name="instagramBusiness" type="checkbox"> Instagram Business verbunden</label>
+                  <label class="check-label"><input id="facebookPage" name="facebookPage" type="checkbox"> Facebook Page verbunden</label>
+                  <label class="check-label"><input id="metaAccess" name="metaAccess" type="checkbox"> Meta Business Zugriff erteilt</label>
+                  <label class="check-label"><input id="contentPlan" name="contentPlan" type="checkbox"> Content Plan eingerichtet</label>
+                </div>
+              </div>
+              <div class="field full">
+                <label for="publishPermission">Yayın onayı</label>
+                <select id="publishPermission" name="publishPermission">
+                  <option value="missing">Noch offen</option>
+                  <option value="approval">Erst Freigabe, dann Publish</option>
+                  <option value="direct">Direkt veroeffentlichen erlaubt</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="onboardingNotes">Onboarding Notizen</label>
+                <textarea id="onboardingNotes" name="notes" placeholder="Was fehlt noch? Wer muss was liefern?"></textarea>
+              </div>
               <div class="form-actions">
-                <button class="btn orange" type="submit">Kunde anlegen</button>
+                <button class="btn orange" id="submitCustomer" type="submit">Kunde anlegen</button>
+                <button class="btn secondary" id="resetForm" type="button">Neu</button>
                 <span class="small" id="customerFormStatus"></span>
               </div>
             </form>
@@ -293,6 +359,7 @@
     </div>
     <script>
       const $ = (id) => document.getElementById(id);
+      const state = { customers: [], editingId: "" };
 
       async function api(path, options) {
         const response = await fetch(path, options);
@@ -310,12 +377,40 @@
           .replaceAll("'", "&#039;");
       }
 
+      function onboardingStatus(customer) {
+        const ob = customer.onboarding || {};
+        const mediaOk = Boolean(ob.productPhotos && ob.productList && ob.instagramBusiness && ob.facebookPage && ob.metaAccess && ob.publishPermission !== "missing");
+        if (!ob.profileComplete) return { label: "Profil eksik", cls: "red" };
+        if (!ob.brandComplete) return { label: "Marka bilgileri eksik", cls: "orange" };
+        if (!mediaOk) return { label: "Medya erişimi eksik", cls: "orange" };
+        if (!ob.contentPlan) return { label: "İçerik planı eksik", cls: "orange" };
+        return { label: "Yayına hazır", cls: "green" };
+      }
+
+      function checklist(customer) {
+        const ob = customer.onboarding || {};
+        return [
+          ["Profil", ob.profileComplete],
+          ["Logo / Marka", ob.brandComplete],
+          ["Ürün foto", ob.productPhotos],
+          ["Ürün liste", ob.productList],
+          ["Instagram Business", ob.instagramBusiness],
+          ["Facebook Page", ob.facebookPage],
+          ["Meta Zugriff", ob.metaAccess],
+          ["Content Plan", ob.contentPlan],
+        ].map(([label, ok]) => `
+          <div class="check-item"><span class="check-dot ${ok ? "ok" : ""}"></span>${label}</div>
+        `).join("");
+      }
+
       function renderCustomers(customers = []) {
+        state.customers = customers;
         $("customerList").innerHTML = customers.map((customer) => `
           <article class="customer-card">
             <h3>${escapeHtml(customer.company || customer.name)}</h3>
             <div>
               <span class="pill green">${escapeHtml(customer.status || "active")}</span>
+              <span class="pill ${onboardingStatus(customer).cls}">${onboardingStatus(customer).label}</span>
               ${customer.instagram ? `<span class="pill">${escapeHtml(customer.instagram)}</span>` : ""}
               ${customer.language ? `<span class="pill gray">${escapeHtml(customer.language)}</span>` : ""}
             </div>
@@ -325,10 +420,60 @@
               <div><strong>Kontakt</strong><br>${escapeHtml(customer.owner || "-")}</div>
               <div><strong>Ort</strong><br>${escapeHtml(customer.city || "-")}</div>
             </div>
+            <div class="checklist">${checklist(customer)}</div>
+            ${customer.onboarding?.notes ? `<p class="small" style="margin:12px 0 0"><strong>Notiz:</strong> ${escapeHtml(customer.onboarding.notes)}</p>` : ""}
             ${customer.positioning ? `<p class="small" style="margin:12px 0 0">${escapeHtml(customer.positioning)}</p>` : ""}
+            <button class="btn secondary small js-edit-customer" type="button" data-id="${escapeHtml(customer.id)}">Bearbeiten</button>
             <a class="btn secondary small" href="/kunde/${encodeURIComponent(customer.id)}">Cockpit öffnen</a>
           </article>
         `).join("") || `<div class="small">Noch keine Kunden angelegt.</div>`;
+      }
+
+      function resetCustomerForm() {
+        state.editingId = "";
+        $("customerForm").reset();
+        $("customerId").value = "";
+        $("primary").value = "#3ABADF";
+        $("accent").value = "#FF6B00";
+        $("language").value = "de";
+        $("publishPermission").value = "missing";
+        $("formTitle").textContent = "Kunde anlegen";
+        $("submitCustomer").textContent = "Kunde anlegen";
+        $("customerFormStatus").textContent = "";
+      }
+
+      function editCustomer(id) {
+        const customer = state.customers.find((item) => item.id === id);
+        if (!customer) return;
+        const ob = customer.onboarding || {};
+        state.editingId = customer.id;
+        $("customerId").value = customer.id;
+        $("company").value = customer.company || customer.name || "";
+        $("owner").value = customer.owner || "";
+        $("email").value = customer.email || "";
+        $("phone").value = customer.phone || "";
+        $("city").value = customer.city || "";
+        $("instagram").value = customer.instagram || "";
+        $("industry").value = customer.industry || "";
+        $("language").value = customer.language || "de";
+        $("primary").value = customer.brand?.primary || "#3ABADF";
+        $("accent").value = customer.brand?.accent || "#FF6B00";
+        $("topics").value = (customer.topics || []).join(", ");
+        $("positioning").value = customer.positioning || "";
+        $("profileComplete").checked = Boolean(ob.profileComplete);
+        $("brandComplete").checked = Boolean(ob.brandComplete);
+        $("productPhotos").checked = Boolean(ob.productPhotos);
+        $("productList").checked = Boolean(ob.productList);
+        $("instagramBusiness").checked = Boolean(ob.instagramBusiness);
+        $("facebookPage").checked = Boolean(ob.facebookPage);
+        $("metaAccess").checked = Boolean(ob.metaAccess);
+        $("contentPlan").checked = Boolean(ob.contentPlan);
+        $("publishPermission").value = ob.publishPermission || "missing";
+        $("onboardingNotes").value = ob.notes || "";
+        $("formTitle").textContent = `${customer.company || customer.name} bearbeiten`;
+        $("submitCustomer").textContent = "Kunde speichern";
+        $("customerFormStatus").textContent = "Bearbeitungsmodus";
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
       async function refreshCustomers() {
@@ -345,17 +490,18 @@
         button.disabled = true;
         const payload = Object.fromEntries(new FormData(form).entries());
         payload.secondary = payload.primary || "#41AADE";
+        for (const key of ["profileComplete", "brandComplete", "productPhotos", "productList", "instagramBusiness", "facebookPage", "metaAccess", "contentPlan"]) {
+          payload[key] = form.elements[key].checked;
+        }
         try {
-          await api("/api/customers", {
-            method: "POST",
+          const path = state.editingId ? `/api/customers/${encodeURIComponent(state.editingId)}` : "/api/customers";
+          await api(path, {
+            method: state.editingId ? "PUT" : "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           });
-          status.textContent = "Kunde angelegt.";
-          form.reset();
-          form.primary.value = "#3ABADF";
-          form.accent.value = "#FF6B00";
-          form.language.value = "de";
+          status.textContent = state.editingId ? "Kunde gespeichert." : "Kunde angelegt.";
+          resetCustomerForm();
           await refreshCustomers();
         } catch (error) {
           status.textContent = error.message;
@@ -365,6 +511,11 @@
       }
 
       $("customerForm").addEventListener("submit", createCustomer);
+      $("resetForm").addEventListener("click", resetCustomerForm);
+      document.addEventListener("click", (event) => {
+        const edit = event.target.closest(".js-edit-customer");
+        if (edit) editCustomer(edit.dataset.id);
+      });
       refreshCustomers().catch((error) => {
         $("customerList").textContent = error.message;
       });

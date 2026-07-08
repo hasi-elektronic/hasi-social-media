@@ -23,6 +23,19 @@
       "Werbung"
     ],
     "positioning": "",
+    "onboarding": {
+      "profileComplete": true,
+      "brandComplete": false,
+      "productPhotos": false,
+      "productList": false,
+      "instagramBusiness": false,
+      "facebookPage": false,
+      "metaAccess": false,
+      "contentPlan": false,
+      "publishPermission": "missing",
+      "notes": "Keby Pilotkunde. Benoetigt Logo/Brand Assets, Produktfotos, Produktliste, Meta Business Zugriff und Freigabe-Regel.",
+      "updatedAt": "2026-07-08T12:01:14.478Z"
+    },
     "createdAt": "2026-07-08T10:57:55.982Z"
   },
   {
@@ -53,6 +66,19 @@
       "IT-Service"
     ],
     "positioning": "Lokaler IT-Partner fuer Web-Apps, iOS Apps, Android Apps, Automatisierung und moderne Geschaeftssoftware.",
+    "onboarding": {
+      "profileComplete": true,
+      "brandComplete": true,
+      "productPhotos": true,
+      "productList": true,
+      "instagramBusiness": true,
+      "facebookPage": true,
+      "metaAccess": true,
+      "contentPlan": true,
+      "publishPermission": "direct",
+      "notes": "Interner Hasi Pilotkunde. Content-Produktion, Plan und lokale Publish-Strecke sind eingerichtet.",
+      "updatedAt": "2026-07-08T12:01:14.478Z"
+    },
     "createdAt": "2026-07-08T12:00:13+02:00"
   }
 ]

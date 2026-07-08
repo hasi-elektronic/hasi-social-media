@@ -118,16 +118,42 @@ function slugify(value) {
     .slice(0, 64);
 }
 
-function normalizeCustomer(input) {
-  const company = String(input.company || input.name || "").trim();
-  if (!company) throw new Error("Firma fehlt");
-  const id = slugify(input.id || company);
-  if (!id) throw new Error("Kunden-ID fehlt");
-  const topics = String(input.topics || "")
+function parseTopics(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean).slice(0, 12);
+  return String(value || "")
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean)
     .slice(0, 12);
+}
+
+function boolValue(value) {
+  return value === true || value === "true" || value === "on" || value === "1";
+}
+
+function normalizeOnboarding(input = {}, existing = {}) {
+  return {
+    profileComplete: boolValue(input.profileComplete ?? existing.profileComplete),
+    brandComplete: boolValue(input.brandComplete ?? existing.brandComplete),
+    productPhotos: boolValue(input.productPhotos ?? existing.productPhotos),
+    productList: boolValue(input.productList ?? existing.productList),
+    instagramBusiness: boolValue(input.instagramBusiness ?? existing.instagramBusiness),
+    facebookPage: boolValue(input.facebookPage ?? existing.facebookPage),
+    metaAccess: boolValue(input.metaAccess ?? existing.metaAccess),
+    contentPlan: boolValue(input.contentPlan ?? existing.contentPlan),
+    publishPermission: String(input.publishPermission || existing.publishPermission || "missing").trim(),
+    notes: String(input.notes ?? existing.notes ?? "").trim(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function normalizeCustomer(input, existing = null) {
+  const company = String(input.company || input.name || "").trim();
+  if (!company) throw new Error("Firma fehlt");
+  const id = slugify(existing?.id || input.id || company);
+  if (!id) throw new Error("Kunden-ID fehlt");
+  const onboardingInput = input.onboarding || input;
+  const brandInput = input.brand || {};
   return {
     id,
     name: company,
@@ -142,15 +168,16 @@ function normalizeCustomer(input) {
     language: String(input.language || "de").trim(),
     status: String(input.status || "active").trim(),
     brand: {
-      primary: String(input.primary || "#3ABADF").trim(),
-      secondary: String(input.secondary || "#41AADE").trim(),
-      accent: String(input.accent || "#FF6B00").trim(),
-      font: String(input.font || "Space Grotesk").trim(),
-      logo: String(input.logo || "").trim(),
+      primary: String(input.primary || brandInput.primary || "#3ABADF").trim(),
+      secondary: String(input.secondary || brandInput.secondary || input.primary || brandInput.primary || "#41AADE").trim(),
+      accent: String(input.accent || brandInput.accent || "#FF6B00").trim(),
+      font: String(input.font || brandInput.font || "Space Grotesk").trim(),
+      logo: String(input.logo || brandInput.logo || "").trim(),
     },
-    topics,
+    topics: parseTopics(input.topics),
     positioning: String(input.positioning || "").trim(),
-    createdAt: new Date().toISOString(),
+    onboarding: normalizeOnboarding(onboardingInput, existing?.onboarding),
+    createdAt: existing?.createdAt || new Date().toISOString(),
   };
 }
 
@@ -163,9 +190,10 @@ async function fallbackCustomers(env, request) {
 async function customers(env, request) {
   if (env.CUSTOMERS) {
     const stored = await env.CUSTOMERS.get("customers", "json");
-    if (Array.isArray(stored)) return stored;
+    if (Array.isArray(stored)) return stored.map((row) => normalizeCustomer(row, row));
   }
-  return fallbackCustomers(env, request);
+  const rows = await fallbackCustomers(env, request);
+  return rows.map((row) => normalizeCustomer(row, row));
 }
 
 async function saveCustomers(env, rows) {
@@ -182,6 +210,17 @@ async function addCustomer(request, env) {
   const nextRows = [customer, ...rows];
   await saveCustomers(env, nextRows);
   return json({ customer }, 201);
+}
+
+async function updateCustomer(request, env, id) {
+  const input = await request.json();
+  const rows = await customers(env, request);
+  const index = rows.findIndex((row) => row.id === id);
+  if (index === -1) return json({ error: "Kunde nicht gefunden" }, 404);
+  const customer = normalizeCustomer({ ...rows[index], ...input }, rows[index]);
+  const nextRows = rows.map((row, rowIndex) => rowIndex === index ? customer : row);
+  await saveCustomers(env, nextRows);
+  return json({ customer });
 }
 
 export default {
@@ -229,6 +268,10 @@ export default {
     }
     if (url.pathname === "/api/customers" && request.method === "POST") {
       return addCustomer(request, env);
+    }
+    if (url.pathname.startsWith("/api/customers/") && request.method === "PUT") {
+      const id = decodeURIComponent(url.pathname.replace("/api/customers/", ""));
+      return updateCustomer(request, env, id);
     }
     if (url.pathname.startsWith("/api/publish/")) {
       return json({ ok: false, error: "Cloud publish is disabled. Bitte lokal im Hasi Cockpit veroeffentlichen." }, 403);

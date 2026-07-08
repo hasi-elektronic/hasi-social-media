@@ -83,16 +83,42 @@ function readRequestBody(req) {
   });
 }
 
-function normalizeCustomer(input) {
-  const company = String(input.company || input.name || "").trim();
-  if (!company) throw new Error("Firma fehlt");
-  const id = slugify(input.id || company);
-  if (!id) throw new Error("Kunden-ID fehlt");
-  const topics = String(input.topics || "")
+function parseTopics(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean).slice(0, 12);
+  return String(value || "")
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean)
     .slice(0, 12);
+}
+
+function boolValue(value) {
+  return value === true || value === "true" || value === "on" || value === "1";
+}
+
+function normalizeOnboarding(input = {}, existing = {}) {
+  return {
+    profileComplete: boolValue(input.profileComplete ?? existing.profileComplete),
+    brandComplete: boolValue(input.brandComplete ?? existing.brandComplete),
+    productPhotos: boolValue(input.productPhotos ?? existing.productPhotos),
+    productList: boolValue(input.productList ?? existing.productList),
+    instagramBusiness: boolValue(input.instagramBusiness ?? existing.instagramBusiness),
+    facebookPage: boolValue(input.facebookPage ?? existing.facebookPage),
+    metaAccess: boolValue(input.metaAccess ?? existing.metaAccess),
+    contentPlan: boolValue(input.contentPlan ?? existing.contentPlan),
+    publishPermission: String(input.publishPermission || existing.publishPermission || "missing").trim(),
+    notes: String(input.notes ?? existing.notes ?? "").trim(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function normalizeCustomer(input, existing = null) {
+  const company = String(input.company || input.name || "").trim();
+  if (!company) throw new Error("Firma fehlt");
+  const id = slugify(existing?.id || input.id || company);
+  if (!id) throw new Error("Kunden-ID fehlt");
+  const onboardingInput = input.onboarding || input;
+  const brandInput = input.brand || {};
   return {
     id,
     name: company,
@@ -107,15 +133,16 @@ function normalizeCustomer(input) {
     language: String(input.language || "de").trim(),
     status: String(input.status || "active").trim(),
     brand: {
-      primary: String(input.primary || "#3ABADF").trim(),
-      secondary: String(input.secondary || "#41AADE").trim(),
-      accent: String(input.accent || "#FF6B00").trim(),
-      font: String(input.font || "Space Grotesk").trim(),
-      logo: String(input.logo || "").trim(),
+      primary: String(input.primary || brandInput.primary || "#3ABADF").trim(),
+      secondary: String(input.secondary || brandInput.secondary || input.primary || brandInput.primary || "#41AADE").trim(),
+      accent: String(input.accent || brandInput.accent || "#FF6B00").trim(),
+      font: String(input.font || brandInput.font || "Space Grotesk").trim(),
+      logo: String(input.logo || brandInput.logo || "").trim(),
     },
-    topics,
+    topics: parseTopics(input.topics),
     positioning: String(input.positioning || "").trim(),
-    createdAt: new Date().toISOString(),
+    onboarding: normalizeOnboarding(onboardingInput, existing?.onboarding),
+    createdAt: existing?.createdAt || new Date().toISOString(),
   };
 }
 
@@ -130,7 +157,7 @@ async function appendLog(entry) {
 
 async function customers() {
   const rows = await readJson(customersPath, []);
-  return Array.isArray(rows) ? rows : [];
+  return Array.isArray(rows) ? rows.map((row) => normalizeCustomer(row, row)) : [];
 }
 
 async function addCustomer(req) {
@@ -145,6 +172,24 @@ async function addCustomer(req) {
   await writeFile(customersPath, `${JSON.stringify(nextRows, null, 2)}\n`);
   await appendLog({
     action: "customer-created",
+    status: "ok",
+    customerId: customer.id,
+    customerName: customer.company,
+  });
+  return customer;
+}
+
+async function updateCustomer(req, id) {
+  const body = await readRequestBody(req);
+  const input = body ? JSON.parse(body) : {};
+  const rows = await customers();
+  const index = rows.findIndex((row) => row.id === id);
+  if (index === -1) throw new Error("Kunde nicht gefunden");
+  const customer = normalizeCustomer({ ...rows[index], ...input }, rows[index]);
+  const nextRows = rows.map((row, rowIndex) => rowIndex === index ? customer : row);
+  await writeFile(customersPath, `${JSON.stringify(nextRows, null, 2)}\n`);
+  await appendLog({
+    action: "customer-updated",
     status: "ok",
     customerId: customer.id,
     customerName: customer.company,
@@ -380,6 +425,11 @@ const server = createServer(async (req, res) => {
     }
     if (url.pathname === "/api/customers" && req.method === "POST") {
       send(res, 201, { customer: await addCustomer(req) });
+      return;
+    }
+    if (url.pathname.startsWith("/api/customers/") && req.method === "PUT") {
+      const id = decodeURIComponent(url.pathname.replace("/api/customers/", ""));
+      send(res, 200, { customer: await updateCustomer(req, id) });
       return;
     }
     if (url.pathname.startsWith("/api/publish/") && req.method === "POST") {

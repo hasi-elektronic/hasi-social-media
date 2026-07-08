@@ -324,6 +324,32 @@
         gap: 7px 12px;
         margin-top: 10px;
       }
+      .onboarding-panel {
+        display: grid;
+        gap: 12px;
+      }
+      .checklist {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px 12px;
+        margin-top: 12px;
+      }
+      .check-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .check-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--red);
+        flex: 0 0 auto;
+      }
+      .check-dot.ok { background: var(--green); }
       @media (max-width: 980px) {
         .layout { grid-template-columns: 1fr; }
         aside { position: relative; height: auto; }
@@ -605,6 +631,52 @@
         `;
       }
 
+      function onboardingStatus(customer) {
+        const ob = customer?.onboarding || {};
+        const mediaOk = Boolean(ob.productPhotos && ob.productList && ob.instagramBusiness && ob.facebookPage && ob.metaAccess && ob.publishPermission !== "missing");
+        if (!ob.profileComplete) return { label: "Profil eksik", cls: "red" };
+        if (!ob.brandComplete) return { label: "Marka bilgileri eksik", cls: "orange" };
+        if (!mediaOk) return { label: "Medya erişimi eksik", cls: "orange" };
+        if (!ob.contentPlan) return { label: "İçerik planı eksik", cls: "orange" };
+        return { label: "Yayına hazır", cls: "green" };
+      }
+
+      function customerReady(customer) {
+        return onboardingStatus(customer).label === "Yayına hazır";
+      }
+
+      function onboardingChecklist(customer) {
+        const ob = customer?.onboarding || {};
+        return [
+          ["Profil", ob.profileComplete],
+          ["Logo / Marke", ob.brandComplete],
+          ["Produktfotos", ob.productPhotos],
+          ["Produktliste / Preise", ob.productList],
+          ["Instagram Business", ob.instagramBusiness],
+          ["Facebook Page", ob.facebookPage],
+          ["Meta Zugriff", ob.metaAccess],
+          ["Content Plan", ob.contentPlan],
+        ].map(([label, ok]) => `
+          <div class="check-item"><span class="check-dot ${ok ? "ok" : ""}"></span>${label}</div>
+        `).join("");
+      }
+
+      function renderOnboardingPanel(customer) {
+        const status = onboardingStatus(customer);
+        return `
+          <div class="onboarding-panel">
+            <div class="notice">Dieser Kunde ist noch nicht bereit fuer automatische Content-Produktion. Erst die offenen Onboarding-Punkte abschliessen, dann koennen Freigabe und Publishing aktiviert werden.</div>
+            <div class="customer-card">
+              <h3>Onboarding Status</h3>
+              <span class="pill ${status.cls}">${status.label}</span>
+              <div class="checklist">${onboardingChecklist(customer)}</div>
+              <p class="small" style="margin:12px 0 0"><strong>Yayın onayı:</strong> ${escapeHtml(customer.onboarding?.publishPermission || "missing")}</p>
+              ${customer.onboarding?.notes ? `<p class="small" style="margin:8px 0 0"><strong>Notiz:</strong> ${escapeHtml(customer.onboarding.notes)}</p>` : ""}
+            </div>
+          </div>
+        `;
+      }
+
       function renderCustomers(customers = []) {
         const customer =
           customers.find((item) => item.id === requestedCustomerId) ||
@@ -626,6 +698,7 @@
             <h3>${escapeHtml(customer.company || customer.name)}</h3>
             <div>
               <span class="pill green">${escapeHtml(customer.status || "active")}</span>
+              <span class="pill ${onboardingStatus(customer).cls}">${onboardingStatus(customer).label}</span>
               ${customer.instagram ? `<span class="pill">${escapeHtml(customer.instagram)}</span>` : ""}
               ${customer.language ? `<span class="pill gray">${escapeHtml(customer.language)}</span>` : ""}
             </div>
@@ -640,23 +713,24 @@
         ` : `<div class="small">Noch kein Kunde angelegt.</div>`;
       }
 
-      function isHasiCustomer() {
-        return state.activeCustomer?.id === "hasi-elektronic";
+      function canShowContent() {
+        return state.activeCustomer?.id === "hasi-elektronic" && customerReady(state.activeCustomer);
       }
 
       function render(data) {
         state.data = data;
         $("apiStatus").innerHTML = data.instagram.ok ? '<span class="ok">OK</span>' : '<span class="bad">Fehler</span>';
         renderCustomers(data.customers || []);
-        const visibleManifests = isHasiCustomer() ? data.manifests : [];
-        const visiblePlan = isHasiCustomer() ? data.plan : [];
-        const visibleLog = isHasiCustomer() ? data.log : [];
+        const showContent = canShowContent();
+        const visibleManifests = showContent ? data.manifests : [];
+        const visiblePlan = showContent ? data.plan : [];
+        const visibleLog = showContent ? data.log : [];
         $("readyCount").textContent = visibleManifests.filter((item) => item.ready && !item.published).length;
         $("lastLog").textContent = visibleLog[0] ? `${visibleLog[0].action}` : "Noch leer";
 
         $("manifestGroups").innerHTML = ["carousel", "story", "reel"]
           .map((type) => renderGroup(type, visibleManifests.filter((item) => item.type === type)))
-          .join("") + (!isHasiCustomer() ? `<div class="notice">Fuer diesen Kunden ist noch keine Content-Produktion eingerichtet. Lege zuerst Themen, Brand Assets und einen Plan an.</div>` : "");
+          .join("") + (!showContent && state.activeCustomer ? renderOnboardingPanel(state.activeCustomer) : "");
 
         $("planRows").innerHTML = `
           <div class="plan-row plan-head">
