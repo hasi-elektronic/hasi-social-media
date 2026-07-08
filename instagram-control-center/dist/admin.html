@@ -104,6 +104,11 @@
       .btn.secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
       .btn.orange { background: var(--orange); }
       .btn:disabled { opacity: .6; cursor: wait; }
+      .btn.small {
+        margin-top: 12px;
+        padding: 8px 10px;
+        font-size: 12px;
+      }
       .grid { display: grid; gap: 16px; grid-template-columns: .95fr 1.05fr; align-items: start; }
       .card {
         background: #fff;
@@ -201,7 +206,6 @@
         </div>
         <nav>
           <a class="active" href="/admin">Admin</a>
-          <a href="/">Aktiver Kunde</a>
           <a href="/logout">Abmelden</a>
         </nav>
       </aside>
@@ -214,7 +218,7 @@
               <p class="subtitle">Kunden anlegen und Stammdaten fuer den Social-Media-Service pflegen.</p>
             </div>
           </div>
-          <a class="btn secondary" href="/">Aktiven Kunden ansehen</a>
+          <a class="btn secondary" href="/">Hasi Cockpit öffnen</a>
         </header>
 
         <section class="grid">
@@ -323,6 +327,7 @@
               <div><strong>Ort</strong><br>${escapeHtml(customer.city || "-")}</div>
             </div>
             ${customer.positioning ? `<p class="small" style="margin:12px 0 0">${escapeHtml(customer.positioning)}</p>` : ""}
+            ${customer.id === "hasi-elektronic" ? `<a class="btn secondary small" href="/">Hasi Cockpit öffnen</a>` : ""}
           </article>
         `).join("") || `<div class="small">Noch keine Kunden angelegt.</div>`;
       }
