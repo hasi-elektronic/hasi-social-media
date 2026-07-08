@@ -1,6 +1,7 @@
 const SESSION_COOKIE = "hasi_cockpit_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 12;
 const LOGIN_HTML = "__LOGIN_HTML__";
+const ADMIN_HTML = "__ADMIN_HTML__";
 
 function base64Url(bytes) {
   let binary = "";
@@ -66,6 +67,10 @@ function json(body, status = 200) {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8" },
   });
+}
+
+function clearSessionCookie() {
+  return `${SESSION_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
 }
 
 async function serveAsset(env, path, request) {
@@ -184,7 +189,10 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/login" || url.pathname === "/login.html") {
       return new Response(LOGIN_HTML, {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Set-Cookie": clearSessionCookie(),
+        },
       });
     }
     if (url.pathname === "/api/login" && request.method === "POST") {
@@ -193,13 +201,27 @@ export default {
     if (url.pathname === "/hasi-logo.png") {
       return serveAsset(env, "/hasi-logo.png", request);
     }
+    if (url.pathname === "/logout") {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: "/login",
+          "Set-Cookie": clearSessionCookie(),
+        },
+      });
+    }
 
     if (!(await verifySession(request, env))) {
       if (url.pathname.startsWith("/api/")) return json({ error: "Unauthorized" }, 401);
-      return Response.redirect(`${url.origin}/login`, 302);
+      const next = `${url.pathname}${url.search}`;
+      return Response.redirect(`${url.origin}/login?next=${encodeURIComponent(next)}`, 302);
     }
 
-    if (url.pathname === "/admin") return serveAsset(env, "/admin.html", request);
+    if (url.pathname === "/admin" || url.pathname === "/admin.html") {
+      return new Response(ADMIN_HTML, {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
     if (url.pathname === "/api/status") return status(env, request);
     if (url.pathname === "/api/customers" && request.method === "GET") {
       return json({ customers: await customers(env, request) });
@@ -209,15 +231,6 @@ export default {
     }
     if (url.pathname.startsWith("/api/publish/")) {
       return json({ ok: false, error: "Cloud publish is disabled. Bitte lokal im Hasi Cockpit veroeffentlichen." }, 403);
-    }
-    if (url.pathname === "/logout") {
-      return new Response(null, {
-        status: 302,
-        headers: {
-          Location: "/login",
-          "Set-Cookie": `${SESSION_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`,
-        },
-      });
     }
     return env.ASSETS.fetch(request);
   },

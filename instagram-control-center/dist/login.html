@@ -194,7 +194,8 @@
           body: JSON.stringify(body),
         });
         if (response.ok) {
-          window.location.href = "/";
+          const next = new URLSearchParams(window.location.search).get("next") || "/";
+          window.location.href = next.startsWith("/") ? next : "/";
           return;
         }
         error.textContent = "Login fehlgeschlagen. Bitte Zugangsdaten pruefen.";
