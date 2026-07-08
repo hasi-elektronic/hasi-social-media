@@ -13,6 +13,7 @@ const mediaRoot = join(root, "instagram-karussells");
 const envPath = join(toolsRoot, ".env");
 const logPath = join(appRoot, "data", "activity-log.json");
 const planPath = join(appRoot, "data", "content-plan.json");
+const customersPath = join(appRoot, "data", "customers.json");
 
 const port = Number(process.env.PORT || 8787);
 
@@ -57,6 +58,67 @@ async function readJson(path, fallback) {
   }
 }
 
+function slugify(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
+}
+
+function readRequestBody(req) {
+  return new Promise((resolveBody, rejectBody) => {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+      if (body.length > 1024 * 1024) {
+        req.destroy();
+        rejectBody(new Error("Request body too large"));
+      }
+    });
+    req.on("end", () => resolveBody(body));
+    req.on("error", rejectBody);
+  });
+}
+
+function normalizeCustomer(input) {
+  const company = String(input.company || input.name || "").trim();
+  if (!company) throw new Error("Firma fehlt");
+  const id = slugify(input.id || company);
+  if (!id) throw new Error("Kunden-ID fehlt");
+  const topics = String(input.topics || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+  return {
+    id,
+    name: company,
+    company,
+    owner: String(input.owner || "").trim(),
+    email: String(input.email || "").trim(),
+    phone: String(input.phone || "").trim(),
+    city: String(input.city || "").trim(),
+    address: String(input.address || "").trim(),
+    instagram: String(input.instagram || "").trim(),
+    industry: String(input.industry || "").trim(),
+    language: String(input.language || "de").trim(),
+    status: String(input.status || "active").trim(),
+    brand: {
+      primary: String(input.primary || "#3ABADF").trim(),
+      secondary: String(input.secondary || "#41AADE").trim(),
+      accent: String(input.accent || "#FF6B00").trim(),
+      font: String(input.font || "Space Grotesk").trim(),
+      logo: String(input.logo || "").trim(),
+    },
+    topics,
+    positioning: String(input.positioning || "").trim(),
+    createdAt: new Date().toISOString(),
+  };
+}
+
 async function appendLog(entry) {
   const log = await readJson(logPath, []);
   log.unshift({
@@ -64,6 +126,30 @@ async function appendLog(entry) {
     ...entry,
   });
   await writeFile(logPath, `${JSON.stringify(log.slice(0, 100), null, 2)}\n`);
+}
+
+async function customers() {
+  const rows = await readJson(customersPath, []);
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function addCustomer(req) {
+  const body = await readRequestBody(req);
+  const input = body ? JSON.parse(body) : {};
+  const customer = normalizeCustomer(input);
+  const rows = await customers();
+  if (rows.some((row) => row.id === customer.id)) {
+    throw new Error("Kunde existiert bereits");
+  }
+  const nextRows = [customer, ...rows];
+  await writeFile(customersPath, `${JSON.stringify(nextRows, null, 2)}\n`);
+  await appendLog({
+    action: "customer-created",
+    status: "ok",
+    customerId: customer.id,
+    customerName: customer.company,
+  });
+  return customer;
 }
 
 async function readEnv() {
@@ -226,6 +312,7 @@ async function status() {
     },
     manifests: items,
     automations: autos,
+    customers: await customers(),
     plan: nextPlan(plan),
     log: log.slice(0, 20),
   };
@@ -280,6 +367,14 @@ const server = createServer(async (req, res) => {
   try {
     if (url.pathname === "/api/status") {
       send(res, 200, await status());
+      return;
+    }
+    if (url.pathname === "/api/customers" && req.method === "GET") {
+      send(res, 200, { customers: await customers() });
+      return;
+    }
+    if (url.pathname === "/api/customers" && req.method === "POST") {
+      send(res, 201, { customer: await addCustomer(req) });
       return;
     }
     if (url.pathname.startsWith("/api/publish/") && req.method === "POST") {

@@ -109,9 +109,11 @@ function nextPlan(plan) {
 const log = await readJson(join(appRoot, "data", "activity-log.json"), []);
 const plan = await readJson(join(appRoot, "data", "content-plan.json"), {});
 const customer = await readJson(join(appRoot, "customer-profile.json"), {});
+const customers = await readJson(join(appRoot, "data", "customers.json"), [customer].filter(Boolean));
 const status = {
   cloud: true,
   customer,
+  customers,
   instagram: {
     ok: true,
     output: "Cloud preview mode. Publishing is disabled in this protected build.",
@@ -130,6 +132,7 @@ await rm(outDir, { recursive: true, force: true });
 await mkdir(join(outDir, "data"), { recursive: true });
 await copyDir(publicRoot, outDir);
 await writeFile(join(outDir, "data", "status.json"), `${JSON.stringify(status, null, 2)}\n`);
+await writeFile(join(outDir, "data", "customers.json"), `${JSON.stringify(customers, null, 2)}\n`);
 const workerSource = await readFile(join(appRoot, "cloudflare-worker.js"), "utf8");
 const loginHtml = await readFile(join(publicRoot, "login.html"), "utf8");
 await writeFile(

@@ -98,9 +98,85 @@ async function handleLogin(request, env) {
 async function status(env, request) {
   const response = await serveAsset(env, "/data/status.json", request);
   if (!response.ok) return json({ error: "Status snapshot not found" }, 404);
-  return new Response(await response.text(), {
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-  });
+  const snapshot = await response.json();
+  snapshot.customers = await customers(env, request);
+  return json(snapshot);
+}
+
+function slugify(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
+}
+
+function normalizeCustomer(input) {
+  const company = String(input.company || input.name || "").trim();
+  if (!company) throw new Error("Firma fehlt");
+  const id = slugify(input.id || company);
+  if (!id) throw new Error("Kunden-ID fehlt");
+  const topics = String(input.topics || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+  return {
+    id,
+    name: company,
+    company,
+    owner: String(input.owner || "").trim(),
+    email: String(input.email || "").trim(),
+    phone: String(input.phone || "").trim(),
+    city: String(input.city || "").trim(),
+    address: String(input.address || "").trim(),
+    instagram: String(input.instagram || "").trim(),
+    industry: String(input.industry || "").trim(),
+    language: String(input.language || "de").trim(),
+    status: String(input.status || "active").trim(),
+    brand: {
+      primary: String(input.primary || "#3ABADF").trim(),
+      secondary: String(input.secondary || "#41AADE").trim(),
+      accent: String(input.accent || "#FF6B00").trim(),
+      font: String(input.font || "Space Grotesk").trim(),
+      logo: String(input.logo || "").trim(),
+    },
+    topics,
+    positioning: String(input.positioning || "").trim(),
+    createdAt: new Date().toISOString(),
+  };
+}
+
+async function fallbackCustomers(env, request) {
+  const response = await serveAsset(env, "/data/customers.json", request);
+  if (!response.ok) return [];
+  return response.json();
+}
+
+async function customers(env, request) {
+  if (env.CUSTOMERS) {
+    const stored = await env.CUSTOMERS.get("customers", "json");
+    if (Array.isArray(stored)) return stored;
+  }
+  return fallbackCustomers(env, request);
+}
+
+async function saveCustomers(env, rows) {
+  if (!env.CUSTOMERS) throw new Error("CUSTOMERS KV binding fehlt");
+  await env.CUSTOMERS.put("customers", JSON.stringify(rows, null, 2));
+}
+
+async function addCustomer(request, env) {
+  const customer = normalizeCustomer(await request.json());
+  const rows = await customers(env, request);
+  if (rows.some((row) => row.id === customer.id)) {
+    return json({ error: "Kunde existiert bereits" }, 409);
+  }
+  const nextRows = [customer, ...rows];
+  await saveCustomers(env, nextRows);
+  return json({ customer }, 201);
 }
 
 export default {
@@ -124,6 +200,12 @@ export default {
     }
 
     if (url.pathname === "/api/status") return status(env, request);
+    if (url.pathname === "/api/customers" && request.method === "GET") {
+      return json({ customers: await customers(env, request) });
+    }
+    if (url.pathname === "/api/customers" && request.method === "POST") {
+      return addCustomer(request, env);
+    }
     if (url.pathname.startsWith("/api/publish/")) {
       return json({ ok: false, error: "Cloud publish is disabled. Bitte lokal im Hasi Cockpit veroeffentlichen." }, 403);
     }

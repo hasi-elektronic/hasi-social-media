@@ -19,6 +19,38 @@
     },
     "positioning": "Lokaler IT-Partner fuer Web-Apps, iOS Apps, Android Apps, Automatisierung und moderne Geschaeftssoftware."
   },
+  "customers": [
+    {
+      "id": "hasi-elektronic",
+      "name": "Hasi Elektronic",
+      "company": "Hasi Elektronic",
+      "owner": "Hamdi Guencavdi",
+      "email": "h.guencavdi@hasi-elektronic.de",
+      "phone": "07042 / 16391",
+      "city": "Vaihingen/Enz",
+      "address": "Grabenstrasse 18, 71665 Vaihingen/Enz",
+      "instagram": "@hasi_elektronic",
+      "industry": "IT, Web-App, iOS-App, Android-App und Automatisierung",
+      "language": "de",
+      "status": "active",
+      "brand": {
+        "primary": "#3ABADF",
+        "secondary": "#41AADE",
+        "accent": "#FF6B00",
+        "font": "Space Grotesk",
+        "logo": "/hasi-logo.png"
+      },
+      "topics": [
+        "Web-App",
+        "iOS App",
+        "Android App",
+        "Automatisierung",
+        "IT-Service"
+      ],
+      "positioning": "Lokaler IT-Partner fuer Web-Apps, iOS Apps, Android Apps, Automatisierung und moderne Geschaeftssoftware.",
+      "createdAt": "2026-07-08T12:00:13+02:00"
+    }
+  ],
   "instagram": {
     "ok": true,
     "output": "Cloud preview mode. Publishing is disabled in this protected build."
