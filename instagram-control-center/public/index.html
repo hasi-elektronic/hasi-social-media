@@ -403,7 +403,7 @@
         <nav>
           <a class="active" href="#dashboard">Dashboard</a>
           <a href="#customer">Kundenprofil</a>
-          <a href="#queue">Beitraege</a>
+          <a href="#queue">Beiträge</a>
           <a href="#plan">14 Tage Plan</a>
           <a href="#automations">Automationen</a>
           <a href="#logs">Logs</a>
@@ -415,7 +415,7 @@
             <img class="header-logo" src="/hasi-logo.png" alt="Hasi Elektronic Logo">
             <div>
               <h1 id="pageTitle">Hasi Social Media</h1>
-              <p class="subtitle" id="pageSubtitle">Beitraege, Storys und Reels planen, pruefen und freigeben.</p>
+              <p class="subtitle" id="pageSubtitle">Beiträge, Storys und Reels planen, prüfen und freigeben.</p>
             </div>
           </div>
           <div class="toolbar">
@@ -445,7 +445,7 @@
 
         <section class="section content-grid grid">
           <div class="card" id="queue">
-            <h2>Beitraege und Freigaben</h2>
+            <h2>Beiträge und Freigaben</h2>
             <div id="todaySummary"></div>
             <div class="notice" style="margin-bottom:12px">Publish-Buttons senden direkt an Instagram. Story bleibt 24 Stunden sichtbar.</div>
             <div class="queue-groups" id="manifestGroups"></div>
@@ -785,7 +785,7 @@
         const status = onboardingStatus(customer);
         return `
           <div class="onboarding-panel">
-            <div class="notice">Dieser Kunde ist noch nicht bereit fuer automatische Beitragsplanung. Erst die offenen Onboarding-Punkte abschliessen, dann koennen Freigabe und Publishing aktiviert werden.</div>
+            <div class="notice">Dieser Kunde ist noch nicht bereit für automatische Beitragsplanung. Erst die offenen Onboarding-Punkte abschließen, dann können Freigabe und Publishing aktiviert werden.</div>
             <div class="customer-card">
               <h3>Onboarding Status</h3>
               <span class="pill ${status.cls}">${status.label}</span>
@@ -822,7 +822,7 @@
         state.activeCustomer = customer || null;
         $("activeCustomer").textContent = customer?.company || "Kein Kunde";
         $("pageTitle").textContent = customer ? `${customer.company || customer.name} Social Media` : "Hasi Social Media";
-        $("pageSubtitle").textContent = customer?.positioning || "Beitraege, Storys und Reels planen, pruefen und freigeben.";
+        $("pageSubtitle").textContent = customer?.positioning || "Beiträge, Storys und Reels planen, prüfen und freigeben.";
         if (customer?.instagram) {
           const handle = customer.instagram.replace(/^@/, "");
           $("instagramLink").href = `https://www.instagram.com/${encodeURIComponent(handle)}/`;
@@ -891,7 +891,7 @@
             <div class="pill">${row.reel}</div>
             <div class="pill">${row.story}</div>
           </div>
-        `).join("") : `<div class="notice" style="margin-top:12px">Noch kein 14-Tage-Plan fuer diesen Kunden eingerichtet.</div>`);
+        `).join("") : `<div class="notice" style="margin-top:12px">Noch kein 14-Tage-Plan für diesen Kunden eingerichtet.</div>`);
 
         $("automationRows").innerHTML = [...data.automations].sort((a, b) => automationScheduleLabel(a).localeCompare(automationScheduleLabel(b))).map((item) => `
           <tr>

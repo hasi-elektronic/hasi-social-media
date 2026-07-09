@@ -435,12 +435,18 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/" || url.pathname === "/index.html" || url.pathname === "/home") {
       return new Response(HOME_HTML, {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
       });
     }
     if (url.pathname === "/demo" || url.pathname === "/demo.html") {
       return new Response(DEMO_HTML, {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
       });
     }
     if (url.pathname === "/login" || url.pathname === "/login.html") {
