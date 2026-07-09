@@ -97,7 +97,7 @@
         gap: clamp(28px, 5vw, 78px);
         align-items: center;
         padding: clamp(46px, 8vw, 104px) clamp(18px, 5vw, 72px) 42px;
-        min-height: calc(100vh - 89px);
+        min-height: min(860px, calc(100vh - 89px));
         background:
           linear-gradient(135deg, rgba(58, 186, 223, .16), rgba(255, 255, 255, 0) 44%),
           linear-gradient(180deg, #f4fbfe 0%, #fff 100%);
@@ -326,6 +326,73 @@
         background: #fff;
       }
       .section.soft { background: #f4fbfe; }
+      .tour {
+        padding-top: 46px;
+        border-top: 1px solid var(--line);
+      }
+      .tour-grid {
+        display: grid;
+        grid-template-columns: .92fr 1.08fr;
+        gap: 28px;
+        align-items: start;
+      }
+      .handover {
+        display: grid;
+        gap: 12px;
+      }
+      .handover-card {
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+      .handover-card small {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--blue-dark);
+        font-size: 12px;
+        font-weight: 900;
+      }
+      .handover-card b { display: block; font-size: 20px; }
+      .handover-card p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      .journey {
+        display: grid;
+        gap: 10px;
+        counter-reset: journey;
+      }
+      .journey-step {
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 14px;
+        align-items: start;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+      .journey-step::before {
+        counter-increment: journey;
+        content: counter(journey, decimal-leading-zero);
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        background: var(--soft);
+        color: var(--blue-dark);
+        font-weight: 900;
+      }
+      .journey-step b { display: block; font-size: 18px; }
+      .journey-step span {
+        display: block;
+        margin-top: 5px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
       .section-head {
         display: flex;
         align-items: end;
@@ -433,7 +500,7 @@
         .hero { grid-template-columns: 1fr; }
         .stage { min-height: 620px; }
         .dashboard { left: 120px; right: auto; }
-        .grid { grid-template-columns: 1fr 1fr; }
+        .grid, .tour-grid { grid-template-columns: 1fr 1fr; }
         .workflow { grid-template-columns: 1fr 1fr; }
       }
       @media (max-width: 760px) {
@@ -442,7 +509,7 @@
         .actions { width: 100%; }
         .actions .button { flex: 1; }
         .hero { min-height: auto; padding-top: 38px; }
-        .proof, .grid, .workflow, .cta-band { grid-template-columns: 1fr; }
+        .proof, .grid, .workflow, .cta-band, .tour-grid { grid-template-columns: 1fr; }
         .stage { min-height: 760px; }
         .dashboard, .phone, .progress { position: relative; inset: auto; width: 100%; margin-top: 16px; }
         .phone { max-width: 280px; margin-inline: auto; }
@@ -463,7 +530,7 @@
       </nav>
       <div class="actions">
         <a class="button" href="/login?next=%2Fapp">Anmelden</a>
-        <a class="button primary" href="/demo">Demo ansehen</a>
+        <a class="button primary" href="/demo">Demo erleben</a>
       </div>
     </header>
 
@@ -471,10 +538,10 @@
       <section class="hero">
         <div>
           <div class="eyebrow">Social-Media-Service für lokale Unternehmen</div>
-          <h1>Instagram-Inhalte, die geplant, geprüft und veröffentlicht werden.</h1>
-          <p class="lead">Wir bauen für jedes Unternehmen einen klaren Redaktionsplan, erstellen Karussells, Reels und Storys und geben Dir eine einfache Freigabe-Zentrale.</p>
+          <h1>Instagram läuft weiter, auch wenn dein Alltag voll ist.</h1>
+          <p class="lead">Du gibst uns die wichtigsten Informationen zu deinem Geschäft. Wir planen, gestalten und prüfen die Beiträge. Du siehst alles vorher und gibst es frei.</p>
           <div class="hero-actions">
-            <a class="button primary" href="/demo">So funktioniert es</a>
+            <a class="button primary" href="/demo">Demo erleben</a>
             <a class="button" href="mailto:info@hasi-elektronic.de?subject=Hasi%20Social%20Media%20Anfrage">Beratung anfragen</a>
           </div>
           <div class="proof">
@@ -526,6 +593,39 @@
         </div>
       </section>
 
+      <section class="section tour" id="ablauf">
+        <div class="section-head">
+          <h2>So läuft es für dich ab</h2>
+          <p>Du musst kein Marketing-System lernen. Du bekommst einen klaren Ablauf und siehst jeden Beitrag, bevor etwas veröffentlicht wird.</p>
+        </div>
+        <div class="tour-grid">
+          <div class="handover">
+            <article class="handover-card">
+              <small>Du gibst uns</small>
+              <b>Logo, Farben, Angebote, Fotos und Zugang</b>
+              <p>Wir sammeln alles, was wir für deine Inhalte brauchen. Wenn etwas fehlt, steht es sichtbar im Onboarding.</p>
+            </article>
+            <article class="handover-card">
+              <small>Wir erstellen</small>
+              <b>Plan, Design, Caption und technische Prüfung</b>
+              <p>Aus deinen Daten entstehen Karussells, Reels und Storys mit Datum, Vorschau und Status.</p>
+            </article>
+            <article class="handover-card">
+              <small>Du siehst</small>
+              <b>Instagram-Vorschau, Text, Freigabe und Log</b>
+              <p>Du prüfst Bild, Text und Zeitpunkt. Erst danach wird veröffentlicht oder bewusst geändert.</p>
+            </article>
+          </div>
+          <div class="journey">
+            <div class="journey-step"><div><b>Wir lernen dein Geschäft kennen</b><span>Branche, Angebot, Zielgruppe und Stil werden sauber aufgenommen.</span></div></div>
+            <div class="journey-step"><div><b>Wir planen 14 Tage Inhalte</b><span>Du siehst, welche Themen und Formate wann vorbereitet werden.</span></div></div>
+            <div class="journey-step"><div><b>Du siehst echte Vorschauen</b><span>Die Beiträge sehen aus wie auf Instagram, nicht wie eine technische Dateiliste.</span></div></div>
+            <div class="journey-step"><div><b>Du gibst frei oder änderst</b><span>Bild, Text und Datum sind klar. Änderungen gehen zurück in die Vorbereitung.</span></div></div>
+            <div class="journey-step"><div><b>Wir veröffentlichen und dokumentieren</b><span>Nach der Veröffentlichung bleiben Status, Uhrzeit und Nachweis im Cockpit sichtbar.</span></div></div>
+          </div>
+        </div>
+      </section>
+
       <section class="section" id="leistung">
         <div class="section-head">
           <h2>Was Kunden bekommen</h2>
@@ -538,17 +638,17 @@
         </div>
       </section>
 
-      <section class="section soft" id="ablauf">
+      <section class="section soft">
         <div class="section-head">
           <h2>Vom Kundenprofil bis Instagram</h2>
-          <p>Der Ablauf ist bewusst schlank: erst Daten sauber sammeln, dann planen, dann automatisch produzieren und kontrolliert veröffentlichen.</p>
+          <p>Der Ablauf bleibt immer gleich. Dadurch weißt du genau, wo ein Beitrag gerade steht.</p>
         </div>
         <div class="workflow">
-          <div class="step"><small>01</small><b>Kunde anlegen</b><span>Branche, Angebot, Standort und Marke erfassen.</span></div>
-          <div class="step"><small>02</small><b>Plan bauen</b><span>Themen, Zeiten und Formate für 14 Tage festlegen.</span></div>
-          <div class="step"><small>03</small><b>Content erstellen</b><span>Slides, Reels und Storys werden vorbereitet.</span></div>
-          <div class="step"><small>04</small><b>Prüfen</b><span>Vorschau ansehen, Caption lesen, Freigabe setzen.</span></div>
-          <div class="step"><small>05</small><b>Publish</b><span>Veröffentlichung mit Status und Log dokumentieren.</span></div>
+          <div class="step"><small>01</small><b>Geschäft verstehen</b><span>Angebot, Fotos, Farben und Zugang klären.</span></div>
+          <div class="step"><small>02</small><b>14 Tage planen</b><span>Themen, Zeiten und Formate festlegen.</span></div>
+          <div class="step"><small>03</small><b>Vorschau bauen</b><span>Slides, Text und Instagram-Ansicht vorbereiten.</span></div>
+          <div class="step"><small>04</small><b>Freigeben</b><span>Du prüfst Bild, Text und Datum.</span></div>
+          <div class="step"><small>05</small><b>Veröffentlichen</b><span>Status, Uhrzeit und Nachweis dokumentieren.</span></div>
         </div>
       </section>
 

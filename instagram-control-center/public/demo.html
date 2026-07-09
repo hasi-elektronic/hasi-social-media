@@ -440,6 +440,39 @@
         color: #344054;
         line-height: 1.5;
       }
+      .explain-box {
+        padding: 14px;
+        border: 1px solid #edf4f7;
+        border-radius: 8px;
+        background: #f8fcfe;
+      }
+      .explain-box b {
+        display: block;
+        margin-bottom: 8px;
+      }
+      .explain-box p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      .approval-list {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .approval-item {
+        display: grid;
+        place-items: center;
+        min-height: 58px;
+        padding: 10px;
+        border: 1px solid #d8f3e5;
+        border-radius: 8px;
+        background: #f0fdf4;
+        color: #067647;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 900;
+      }
       .publish-row {
         display: flex;
         flex-wrap: wrap;
@@ -525,7 +558,7 @@
         .product-demo { grid-template-columns: 1fr; }
         .machine { min-height: 620px; }
         .timeline { grid-template-columns: 1fr 1fr; }
-        .status-grid { grid-template-columns: 1fr; }
+        .status-grid, .approval-list { grid-template-columns: 1fr; }
       }
       @media (max-width: 720px) {
         .topbar { flex-direction: column; align-items: flex-start; }
@@ -534,6 +567,9 @@
         .bubble { position: relative; left: auto; right: auto; top: auto; width: 100%; margin: 10px 0; }
         .content-preview { position: relative; left: auto; top: auto; margin: 20px auto; transform: none; animation: none; }
         .timeline { grid-template-columns: 1fr; }
+        .publish-row { flex-direction: column; align-items: stretch; }
+        .publish-button, .publish-log { width: 100%; }
+        .activity-feed li { grid-template-columns: 62px 1fr; }
       }
     </style>
   </head>
@@ -553,7 +589,7 @@
       <section class="hero">
         <div class="eyebrow">Live-Demo mit echtem Hasi Inhalt</div>
         <h1>Teste einen fertigen Beitrag, bevor er veröffentlicht wird.</h1>
-        <p class="lead">Diese Demo zeigt einen real vorbereiteten Hasi-Karussell-Post inklusive Instagram-Vorschau, Caption, Prüfstatus und sicherem Publish-Test.</p>
+        <p class="lead">Diese Demo zeigt einen real vorbereiteten Hasi-Karussell-Post. Du prüfst Bild, Text und Datum. Der Button ist ein sicherer Demo-Test.</p>
       </section>
 
       <section class="product-demo" aria-label="Hasi Social Media Produktdemo">
@@ -602,7 +638,12 @@
               <div class="check-line"><i>✓</i><span>7 Bild-URLs geprüft</span><em>HTTP 200</em></div>
               <div class="check-line"><i>✓</i><span>Dateityp korrekt</span><em>image/png</em></div>
               <div class="check-line"><i>✓</i><span>Caption vorhanden</span><em>Deutsch</em></div>
-              <div class="check-line"><i>✓</i><span>Publish-Regel</span><em>Demo-Modus</em></div>
+              <div class="check-line"><i>✓</i><span>Veröffentlichungs-Regel</span><em>Demo-Modus</em></div>
+            </div>
+
+            <div class="explain-box">
+              <b>Was prüfst du hier?</b>
+              <p>Stimmt das Bild? Passt der Text zu deinem Angebot? Ist das Datum richtig? Wenn alles passt, kann der Beitrag freigegeben werden.</p>
             </div>
 
             <div class="caption-box">
@@ -610,9 +651,16 @@
               Hasi Elektronic baut moderne Web-Apps, Kundenportale, Online-Formulare und Terminlösungen, die genau zu deinem Betrieb passen. Schlank, sicher gehostet und mit persönlicher Betreuung aus Vaihingen/Enz.
             </div>
 
+            <div class="approval-list" aria-label="Freigabe vor der Veröffentlichung">
+              <div class="approval-item">Bild korrekt</div>
+              <div class="approval-item">Text korrekt</div>
+              <div class="approval-item">Datum korrekt</div>
+              <div class="approval-item">Freigabe ok</div>
+            </div>
+
             <div class="publish-row">
               <button class="publish-button" id="demoPublish" type="button">Publish testen</button>
-              <div class="publish-log" id="publishLog">Noch nicht veröffentlicht. Der Button simuliert den Ablauf ohne Instagram API.</div>
+              <div class="publish-log" id="publishLog">Noch nicht veröffentlicht. Der Button simuliert den Ablauf. Nichts wird an Instagram gesendet.</div>
             </div>
 
             <ul class="activity-feed" id="activityFeed">
@@ -628,7 +676,7 @@
         <article class="step"><small>01</small><b>Onboarding</b><span>Kundendaten, Marke und Zugriff werden komplett gemacht.</span></article>
         <article class="step"><small>02</small><b>Themenplan</b><span>Formate, Uhrzeiten und Themen werden vorbereitet.</span></article>
         <article class="step"><small>03</small><b>Produktion</b><span>Karussell, Reel und Story werden erstellt und gespeichert.</span></article>
-        <article class="step"><small>04</small><b>Freigabe</b><span>Der Kunde sieht Vorschau und Text vor dem Publish.</span></article>
+        <article class="step"><small>04</small><b>Freigabe</b><span>Der Kunde sieht Vorschau und Text vor der Veröffentlichung.</span></article>
         <article class="step"><small>05</small><b>Nachweis</b><span>Veröffentlichung, Media-ID und Status bleiben im Log.</span></article>
       </section>
 
@@ -665,10 +713,10 @@
         button.disabled = true;
         button.textContent = "Veröffentlicht";
         status.textContent = "veröffentlicht";
-        log.textContent = "Demo-Publish erfolgreich: Media-ID DEMO-17901066363463022 wurde simuliert. Es wurde nichts an Instagram gesendet.";
+        log.textContent = "Demo-Modus: nichts wurde an Instagram gesendet. Media-ID DEMO-17901066363463022 wurde nur simuliert.";
         const item = document.createElement("li");
         item.className = "demo-new";
-        item.innerHTML = "<time>Jetzt</time><span><b>Publish-Test abgeschlossen</b><br />Status, Media-ID und Log wurden im Demo-Modus gesetzt.</span>";
+        item.innerHTML = "<time>Jetzt</time><span><b>Veröffentlichungs-Test abgeschlossen</b><br />Status, Media-ID und Log wurden im Demo-Modus gesetzt.</span>";
         feed.prepend(item);
       });
     </script>

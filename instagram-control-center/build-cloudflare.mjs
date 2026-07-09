@@ -101,7 +101,7 @@ function nextPlan(plan) {
     date.setDate(now.getDate() + index);
     return {
       date: date.toISOString().slice(0, 10),
-      topic: topics[index % topics.length] || "Web-App fuer lokale Firmen",
+      topic: topics[index % topics.length] || "Web-App für lokale Firmen",
       carousel: plan.cadence?.carousel || "08:00",
       reel: plan.cadence?.reel || "08:30",
       story: plan.cadence?.story || "09:00",

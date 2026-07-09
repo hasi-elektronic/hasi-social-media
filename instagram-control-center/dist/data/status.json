@@ -8,7 +8,7 @@
     "email": "h.guencavdi@hasi-elektronic.de",
     "phone": "07042 / 16391",
     "city": "Vaihingen/Enz",
-    "address": "Grabenstrasse 18, 71665 Vaihingen/Enz",
+    "address": "Grabenstraße 18, 71665 Vaihingen/Enz",
     "industry": "IT, Web-App, iOS-App, Android-App und Automatisierung",
     "brand": {
       "primary": "#3ABADF",
@@ -17,7 +17,7 @@
       "font": "Plus Jakarta Sans",
       "logo": "/hasi-logo.png"
     },
-    "positioning": "Lokaler IT-Partner fuer Web-Apps, iOS Apps, Android Apps, Automatisierung und moderne Geschaeftssoftware."
+    "positioning": "Lokaler IT-Partner für Web-Apps, iOS Apps, Android Apps, Automatisierung und moderne Geschäftssoftware."
   },
   "customers": [
     {
@@ -72,7 +72,7 @@
       "email": "h.guencavdi@hasi-elektronic.de",
       "phone": "07042 / 16391",
       "city": "Vaihingen/Enz",
-      "address": "Grabenstrasse 18, 71665 Vaihingen/Enz",
+      "address": "Grabenstraße 18, 71665 Vaihingen/Enz",
       "instagram": "@hasi_elektronic",
       "industry": "IT, Web-App, iOS-App, Android-App und Automatisierung",
       "language": "de",
@@ -96,7 +96,7 @@
         "reel": "08:30",
         "story": "09:00"
       },
-      "positioning": "Lokaler IT-Partner fuer Web-Apps, iOS Apps, Android Apps, Automatisierung und moderne Geschaeftssoftware.",
+      "positioning": "Lokaler IT-Partner für Web-Apps, iOS Apps, Android Apps, Automatisierung und moderne Geschäftssoftware.",
       "onboarding": {
         "profileComplete": true,
         "brandComplete": true,
@@ -840,7 +840,7 @@
   "plan": [
     {
       "date": "2026-07-09",
-      "topic": "Web-App fuer lokale Firmen",
+      "topic": "Web-App für lokale Firmen",
       "carousel": "08:00",
       "reel": "08:30",
       "story": "09:00"
@@ -917,7 +917,7 @@
     },
     {
       "date": "2026-07-20",
-      "topic": "Automatisierung fuer kleine Betriebe",
+      "topic": "Automatisierung für kleine Betriebe",
       "carousel": "08:00",
       "reel": "08:30",
       "story": "09:00"
@@ -987,7 +987,7 @@
       "slug": "",
       "manifest": "",
       "instagramId": "",
-      "note": "Story-Automation ist ACTIVE und fuer 15:30 Europe/Berlin geplant."
+      "note": "Story-Automation ist ACTIVE und für 15:30 Europe/Berlin geplant."
     },
     {
       "time": "2026-07-08T10:10:00+02:00",

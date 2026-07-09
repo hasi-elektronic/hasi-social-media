@@ -1,6 +1,6 @@
 # Hasi Social Media
 
-Steuerzentrum fuer Beitraege, Storys, Reels, Kundenprofile und Hasi Instagram Automationen.
+Steuerzentrum für Beiträge, Storys, Reels, Kundenprofile und Hasi Instagram Automationen.
 
 ## Cloudflare Pages
 
@@ -50,11 +50,11 @@ http://localhost:8787
 
 ## Funktionen
 
-- Instagram API Status pruefen
+- Instagram API Status prüfen
 - Carousel, Reel und Story Manifeste anzeigen
-- Cloudflare R2 URLs per HEAD pruefen
+- Cloudflare R2 URLs per HEAD prüfen
 - Publish-ready Content anzeigen
-- Carousel/Reel/Story manuell veroeffentlichen
+- Carousel/Reel/Story manuell veröffentlichen
 - Aktive Codex Automationen anzeigen
 - 14-Tage Content-Plan anzeigen
 - Publish-Logs lokal speichern
