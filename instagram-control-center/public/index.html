@@ -6,7 +6,7 @@
     <title>Hasi Social Media</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
       :root {
         --blue: #3abadf;
@@ -25,13 +25,16 @@
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        font-family: "Space Grotesk", system-ui, sans-serif;
+        font-family: "Nunito Sans", system-ui, sans-serif;
         color: var(--ink);
         background:
           linear-gradient(180deg, rgba(58, 186, 223, .08), transparent 280px),
           var(--bg);
       }
       button, input, textarea { font: inherit; }
+      h1, h2, h3, h4, .brand b {
+        font-family: "Plus Jakarta Sans", "Nunito Sans", system-ui, sans-serif;
+      }
       .layout { min-height: 100vh; display: grid; grid-template-columns: 280px 1fr; }
       aside {
         background: linear-gradient(180deg, var(--nav), #081522);

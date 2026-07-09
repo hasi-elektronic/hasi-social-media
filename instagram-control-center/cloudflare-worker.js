@@ -234,7 +234,7 @@ function normalizeCustomer(input, existing = null) {
       primary: String(input.primary || brandInput.primary || "#3ABADF").trim(),
       secondary: String(input.secondary || brandInput.secondary || input.primary || brandInput.primary || "#41AADE").trim(),
       accent: String(input.accent || brandInput.accent || "#FF6B00").trim(),
-      font: String(input.font || brandInput.font || "Space Grotesk").trim(),
+      font: String(input.font || brandInput.font || "Plus Jakarta Sans").trim(),
       logo: String(input.logo || brandInput.logo || "").trim(),
     },
     topics: parseTopics(input.topics),
