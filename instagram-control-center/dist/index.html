@@ -590,6 +590,14 @@
         return slugDate?.[1] || localDateKey(item.sortAt || item.updatedAt || item.publishedAt);
       }
 
+      function formatSlugOrFile(value) {
+        return String(value || "").replace(/(\d{4})-(\d{2})-(\d{2})/g, "$3.$2.$1");
+      }
+
+      function displayManifestName(item) {
+        return formatSlugOrFile(item.file || item.slug || "");
+      }
+
       function newestFirst(items) {
         return [...items].sort((a, b) => {
           const aTime = new Date(a.sortAt || a.updatedAt || a.publishedAt || 0).getTime() || 0;
@@ -630,7 +638,7 @@
             <div class="today-item">
               <span class="pill ${status.cls}">${status.label}</span>
               <strong>${time} ${label}</strong>
-              <div class="small">${item ? escapeHtml(item.file) : "Kein heutiger Inhalt gefunden."}</div>
+              <div class="small">${item ? escapeHtml(displayManifestName(item)) : "Kein heutiger Inhalt gefunden."}</div>
               <div class="small">${escapeHtml(status.detail)}</div>
             </div>
           `;
@@ -695,7 +703,7 @@
           `Status: ${entry.status || (entry.ok ? "ok" : "-")}`,
           entry.type ? `Typ: ${typeLabel(entry.type)}` : "",
           entry.topic ? `Thema: ${entry.topic}` : "",
-          entry.slug ? `Slug: ${entry.slug}` : "",
+          entry.slug ? `Slug: ${formatSlugOrFile(entry.slug)}` : "",
           entry.instagramId ? `Instagram ID: ${entry.instagramId}` : "",
           entry.note ? `Notiz: ${entry.note}` : "",
         ].filter(Boolean).join("\n")).join("\n\n");
@@ -709,7 +717,7 @@
           <tr>
             <td>${preview(item)}</td>
             <td><span class="pill">${typeLabel(item.type)}</span><div class="small">${item.urlCount} URL</div></td>
-            <td><strong>${item.file}</strong><div class="small">Aktualisiert: ${formatGermanDateTime(item.updatedAt || item.sortAt)}</div><div class="small">${item.caption ? item.caption.slice(0, 90) + "..." : item.preview}</div></td>
+            <td><strong>${displayManifestName(item)}</strong><div class="small">Aktualisiert: ${formatGermanDateTime(item.updatedAt || item.sortAt)}</div><div class="small">${item.caption ? item.caption.slice(0, 90) + "..." : item.preview}</div></td>
             <td>${statusPill(item)}</td>
             <td><div class="actions">${publishButton(item)}</div></td>
           </tr>
@@ -931,8 +939,8 @@
         state.previewItem = item;
         state.previewIndex = 0;
         $("modalType").textContent = typeLabel(item.type);
-        $("modalTitle").textContent = item.file;
-        $("modalCaption").textContent = item.caption || item.slug;
+        $("modalTitle").textContent = displayManifestName(item);
+        $("modalCaption").textContent = item.caption || formatSlugOrFile(item.slug);
         $("modalStatus").innerHTML = statusPill(item);
         $("modalUrls").innerHTML = item.urls.map((url, index) => (
           `<a href="${url}" target="_blank" rel="noreferrer">URL ${index + 1}: ${url}</a>`
