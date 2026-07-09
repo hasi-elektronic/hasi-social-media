@@ -138,11 +138,15 @@ await writeFile(join(outDir, "data", "customers.json"), `${JSON.stringify(custom
 const workerSource = await readFile(join(appRoot, "cloudflare-worker.js"), "utf8");
 const loginHtml = await readFile(join(publicRoot, "login.html"), "utf8");
 const adminHtml = await readFile(join(publicRoot, "admin.html"), "utf8");
+const homeHtml = await readFile(join(publicRoot, "home.html"), "utf8");
+const demoHtml = await readFile(join(publicRoot, "demo.html"), "utf8");
 await writeFile(
   join(outDir, "_worker.js"),
   workerSource
     .replace('"__LOGIN_HTML__"', JSON.stringify(loginHtml))
-    .replace('"__ADMIN_HTML__"', JSON.stringify(adminHtml)),
+    .replace('"__ADMIN_HTML__"', JSON.stringify(adminHtml))
+    .replace('"__HOME_HTML__"', JSON.stringify(homeHtml))
+    .replace('"__DEMO_HTML__"', JSON.stringify(demoHtml)),
   "utf8"
 );
 

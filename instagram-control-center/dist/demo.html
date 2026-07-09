@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Demo | Hasi Social Media</title>
+    <meta name="description" content="Animierte Demo: So entsteht ein Social-Media-Beitrag im Hasi Social Media Kundenportal." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --blue: #3abadf;
+        --blue-dark: #117392;
+        --ink: #101828;
+        --navy: #0b1c2a;
+        --muted: #667085;
+        --line: #d8eef5;
+        --soft: #eef9fd;
+        --orange: #ff6b00;
+        --green: #16a765;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        color: var(--ink);
+        background: linear-gradient(180deg, #f4fbfe 0%, #fff 44%, #eef9fd 100%);
+      }
+      a { color: inherit; text-decoration: none; }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 18px clamp(18px, 5vw, 70px);
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, .92);
+        backdrop-filter: blur(14px);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+      }
+      .brand img {
+        width: 52px;
+        height: 52px;
+        border-radius: 8px;
+        padding: 7px;
+        background: #fff;
+        object-fit: contain;
+        box-shadow: 0 10px 24px rgba(17, 115, 146, .12);
+      }
+      .brand span { display: block; color: var(--blue-dark); font-size: 13px; }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 18px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font-weight: 800;
+        box-shadow: 0 8px 20px rgba(17, 115, 146, .08);
+      }
+      .button.primary {
+        border-color: var(--orange);
+        background: var(--orange);
+        color: #fff;
+      }
+      .hero {
+        padding: clamp(36px, 6vw, 78px) clamp(18px, 5vw, 70px) 28px;
+        text-align: center;
+      }
+      .eyebrow {
+        display: inline-flex;
+        padding: 8px 11px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--blue-dark);
+        font-size: 13px;
+        font-weight: 900;
+      }
+      h1 {
+        max-width: 980px;
+        margin: 18px auto 0;
+        font-size: clamp(40px, 7vw, 76px);
+        line-height: .98;
+        letter-spacing: 0;
+      }
+      .lead {
+        max-width: 760px;
+        margin: 22px auto 0;
+        color: var(--muted);
+        font-size: 20px;
+        line-height: 1.45;
+      }
+      .demo-stage {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr) 300px;
+        gap: 20px;
+        align-items: stretch;
+        padding: 24px clamp(18px, 5vw, 70px) 72px;
+      }
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255,255,255,.94);
+        box-shadow: 0 24px 60px rgba(16, 24, 40, .1);
+      }
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px;
+        border-bottom: 1px solid #edf4f7;
+        font-weight: 900;
+      }
+      .pill {
+        padding: 6px 9px;
+        border-radius: 8px;
+        background: var(--soft);
+        color: var(--blue-dark);
+        font-size: 12px;
+        font-weight: 900;
+      }
+      .customer-card {
+        margin: 16px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #f8fcfe;
+        animation: cardPulse 6s ease-in-out infinite;
+      }
+      .customer-card h2 { margin: 0 0 8px; font-size: 22px; }
+      .customer-card p { margin: 0; color: var(--muted); line-height: 1.45; }
+      .check {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        border-top: 1px solid #edf4f7;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #e9fbf3;
+        color: var(--green);
+        display: inline-grid;
+        place-items: center;
+        font-size: 12px;
+        font-weight: 900;
+      }
+      .machine {
+        position: relative;
+        overflow: hidden;
+        min-height: 600px;
+        padding: 22px;
+      }
+      .track {
+        position: absolute;
+        left: 42px;
+        right: 42px;
+        top: 52%;
+        height: 8px;
+        border-radius: 8px;
+        background: #e6f4f8;
+      }
+      .track::after {
+        content: "";
+        display: block;
+        height: 100%;
+        border-radius: 8px;
+        background: var(--orange);
+        transform-origin: left;
+        animation: lineFill 8s ease-in-out infinite;
+      }
+      .bubble {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        width: 122px;
+        height: 92px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 18px 42px rgba(16, 24, 40, .12);
+        text-align: center;
+        font-weight: 900;
+        animation: bubbleFocus 8s ease-in-out infinite;
+      }
+      .bubble small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; font-weight: 800; }
+      .b1 { left: 6%; top: 26%; animation-delay: 0s; }
+      .b2 { left: 28%; top: 62%; animation-delay: 1.35s; }
+      .b3 { left: 49%; top: 25%; animation-delay: 2.7s; }
+      .b4 { left: 68%; top: 62%; animation-delay: 4.05s; }
+      .b5 { right: 4%; top: 26%; animation-delay: 5.4s; }
+      .content-preview {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 210px;
+        height: 270px;
+        padding: 16px;
+        transform: translate(-50%, -50%);
+        border-radius: 14px;
+        background:
+          linear-gradient(145deg, #fff 0 60%, rgba(58, 186, 223, .2) 60%),
+          #fff;
+        border: 1px solid var(--line);
+        box-shadow: 0 28px 70px rgba(16, 24, 40, .18);
+        animation: previewSpin 8s ease-in-out infinite;
+      }
+      .content-preview img { width: 48px; height: 24px; object-fit: contain; }
+      .content-preview h3 { margin: 74px 0 0; font-size: 24px; line-height: 1.05; }
+      .content-preview p { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.35; }
+      .queue { padding-bottom: 12px; }
+      .queue-row {
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        gap: 12px;
+        padding: 14px 16px;
+        border-top: 1px solid #edf4f7;
+      }
+      .thumb {
+        height: 76px;
+        border-radius: 8px;
+        background:
+          linear-gradient(145deg, #fff 0 60%, rgba(58, 186, 223, .22) 60%),
+          #fff;
+        border: 1px solid var(--line);
+      }
+      .queue-row b { display: block; margin: 2px 0 6px; }
+      .queue-row span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+      .publish {
+        display: inline-flex;
+        margin-top: 10px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: var(--orange);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 900;
+      }
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+        padding: 0 clamp(18px, 5vw, 70px) 44px;
+      }
+      .step {
+        min-height: 136px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+      .step small { color: var(--blue-dark); font-weight: 900; }
+      .step b { display: block; margin-top: 18px; }
+      .step span { display: block; margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+      .bottom-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        padding: 0 18px 70px;
+      }
+      @keyframes lineFill {
+        0% { transform: scaleX(.06); }
+        18% { transform: scaleX(.25); }
+        38% { transform: scaleX(.5); }
+        60% { transform: scaleX(.74); }
+        100% { transform: scaleX(1); }
+      }
+      @keyframes bubbleFocus {
+        0%, 100% { transform: translateY(0); border-color: var(--line); }
+        25% { transform: translateY(-12px); border-color: var(--blue); box-shadow: 0 26px 54px rgba(17, 115, 146, .2); }
+      }
+      @keyframes previewSpin {
+        0%, 100% { transform: translate(-50%, -50%) rotate(-2deg) scale(1); }
+        45% { transform: translate(-50%, -50%) rotate(2deg) scale(1.04); }
+      }
+      @keyframes cardPulse {
+        0%, 100% { border-color: var(--line); }
+        50% { border-color: rgba(58, 186, 223, .8); box-shadow: 0 16px 34px rgba(17, 115, 146, .12); }
+      }
+      @media (max-width: 1100px) {
+        .demo-stage { grid-template-columns: 1fr; }
+        .machine { min-height: 620px; }
+        .timeline { grid-template-columns: 1fr 1fr; }
+      }
+      @media (max-width: 720px) {
+        .topbar { flex-direction: column; align-items: flex-start; }
+        .machine { min-height: 820px; }
+        .track { display: none; }
+        .bubble { position: relative; left: auto; right: auto; top: auto; width: 100%; margin: 10px 0; }
+        .content-preview { position: relative; left: auto; top: auto; margin: 20px auto; transform: none; animation: none; }
+        .timeline { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/">
+        <img src="/hasi-logo.png" alt="Hasi Elektronic Logo" />
+        <span>Hasi Social Media<span>Demo Ablauf</span></span>
+      </a>
+      <div>
+        <a class="button" href="/">Startseite</a>
+        <a class="button primary" href="/login?next=%2Fapp">Anmelden</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Animierte Beispielstrecke</div>
+        <h1>So wird aus Kundendaten ein veroeffentlichter Beitrag.</h1>
+        <p class="lead">Die Demo zeigt den geplanten Ablauf fuer neue Kunden: Onboarding, Content-Plan, Vorschau, Freigabe und Publish-Log.</p>
+      </section>
+
+      <section class="demo-stage" aria-label="Animierter Workflow">
+        <aside class="panel">
+          <div class="panel-head">Kundenprofil <span class="pill">Demo</span></div>
+          <div class="customer-card">
+            <h2>Restaurant Sonne</h2>
+            <p>Lokales Restaurant mit Mittagstisch, Events und Wochenkarte.</p>
+          </div>
+          <div class="check"><span>Logo & Farben</span><span class="dot">✓</span></div>
+          <div class="check"><span>Produkte & Angebote</span><span class="dot">✓</span></div>
+          <div class="check"><span>Meta Zugriff</span><span class="dot">✓</span></div>
+          <div class="check"><span>Freigabe-Regel</span><span class="dot">✓</span></div>
+        </aside>
+
+        <section class="panel machine">
+          <div class="panel-head">Automatischer Ablauf <span class="pill">live animiert</span></div>
+          <div class="track"></div>
+          <div class="bubble b1">Profil<small>Daten sammeln</small></div>
+          <div class="bubble b2">Plan<small>14 Tage</small></div>
+          <div class="bubble b3">Design<small>Post bauen</small></div>
+          <div class="bubble b4">Freigabe<small>Kunde prueft</small></div>
+          <div class="bubble b5">Publish<small>Log speichern</small></div>
+          <article class="content-preview">
+            <img src="/hasi-logo.png" alt="" />
+            <h3>Heute frisch gekocht.</h3>
+            <p>Mittagstisch, Angebot und klare Handlungsaufforderung fuer Instagram.</p>
+          </article>
+        </section>
+
+        <aside class="panel queue">
+          <div class="panel-head">Beitraege <span class="pill">publish-ready</span></div>
+          <div class="queue-row">
+            <div class="thumb"></div>
+            <div><b>Karussell</b><span>7 Slides · 08:00 · wartet auf Freigabe</span><span class="publish">Vorschau</span></div>
+          </div>
+          <div class="queue-row">
+            <div class="thumb"></div>
+            <div><b>Reel</b><span>Video · 08:30 · Caption vorbereitet</span><span class="publish">Vorschau</span></div>
+          </div>
+          <div class="queue-row">
+            <div class="thumb"></div>
+            <div><b>Story</b><span>Bild · 09:00 · 24 Stunden sichtbar</span><span class="publish">Vorschau</span></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="timeline">
+        <article class="step"><small>01</small><b>Onboarding</b><span>Kundendaten, Marke und Zugriff werden komplett gemacht.</span></article>
+        <article class="step"><small>02</small><b>Themenplan</b><span>Formate, Uhrzeiten und Themen werden vorbereitet.</span></article>
+        <article class="step"><small>03</small><b>Produktion</b><span>Karussell, Reel und Story werden erstellt und gespeichert.</span></article>
+        <article class="step"><small>04</small><b>Freigabe</b><span>Der Kunde sieht Vorschau und Text vor dem Publish.</span></article>
+        <article class="step"><small>05</small><b>Nachweis</b><span>Veroeffentlichung, Media-ID und Status bleiben im Log.</span></article>
+      </section>
+
+      <div class="bottom-actions">
+        <a class="button primary" href="/login?next=%2Fapp">Zum Kundenportal</a>
+        <a class="button" href="mailto:info@hasi-elektronic.de?subject=Hasi%20Social%20Media%20Demo">Demo besprechen</a>
+      </div>
+    </main>
+  </body>
+</html>

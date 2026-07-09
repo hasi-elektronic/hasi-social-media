@@ -411,11 +411,15 @@ async function publish(type, file) {
 }
 
 async function serveStatic(req, res, pathname) {
-  const file = pathname === "/" || pathname.startsWith("/kunde/")
-    ? "index.html"
-    : pathname === "/admin"
-      ? "admin.html"
-      : pathname.slice(1);
+  const file = pathname === "/" || pathname === "/index.html" || pathname === "/home"
+    ? "home.html"
+    : pathname === "/demo"
+      ? "demo.html"
+      : pathname === "/app" || pathname.startsWith("/kunde/")
+        ? "index.html"
+        : pathname === "/admin"
+          ? "admin.html"
+          : pathname.slice(1);
   const target = resolve(publicRoot, file);
   if (!target.startsWith(publicRoot) || !(await exists(target))) {
     sendText(res, 404, "Not found");

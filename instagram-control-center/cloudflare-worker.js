@@ -2,6 +2,8 @@ const SESSION_COOKIE = "hasi_cockpit_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 12;
 const LOGIN_HTML = "__LOGIN_HTML__";
 const ADMIN_HTML = "__ADMIN_HTML__";
+const HOME_HTML = "__HOME_HTML__";
+const DEMO_HTML = "__DEMO_HTML__";
 
 function base64Url(bytes) {
   let binary = "";
@@ -431,6 +433,16 @@ async function publishFromCloud(request, env, type, file) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/" || url.pathname === "/index.html" || url.pathname === "/home") {
+      return new Response(HOME_HTML, {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
+    if (url.pathname === "/demo" || url.pathname === "/demo.html") {
+      return new Response(DEMO_HTML, {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
     if (url.pathname === "/login" || url.pathname === "/login.html") {
       return new Response(LOGIN_HTML, {
         headers: {
@@ -466,6 +478,7 @@ export default {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
     }
+    if (url.pathname === "/app" || url.pathname === "/app.html") return serveAsset(env, "/index.html", request);
     if (url.pathname.startsWith("/kunde/")) return serveAsset(env, "/index.html", request);
     if (url.pathname === "/api/status") return status(env, request);
     if (url.pathname === "/api/customers" && request.method === "GET") {
