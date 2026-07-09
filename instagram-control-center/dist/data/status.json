@@ -119,6 +119,126 @@
   },
   "manifests": [
     {
+      "file": "warteliste-pro-2026-07-09.story.manifest.json",
+      "type": "story",
+      "path": "/Users/hguencavdi/Desktop/it-cockpit/instagram-karussells/tools/warteliste-pro-2026-07-09.story.manifest.json",
+      "slug": "warteliste-pro-2026-07-09",
+      "caption": "Wartezimmer voll, Telefon voll, Team gestresst?\n\nMit WarteListe Pro wird aus Chaos eine digitale Warteliste: Online anmelden, Status sehen, automatisch informieren. Hasi Elektronic entwickelt Web-Apps, iOS Apps, Android Apps und passende Backends für lokale Betriebe.\n\nHasi Elektronic\nGrabenstraße 18, 71665 Vaihingen/Enz\nTel. 07042 / 16391\n\n#hasi #hasielektronic #vaihingenenz #wartelistepro #webapp #appentwicklung #iosapp #androidapp #automatisierung #digitalisierung",
+      "urlCount": 1,
+      "urls": [
+        "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/reels/warteliste-pro-2026-07-09/warteliste-pro-2026-07-09.mp4"
+      ],
+      "checks": [
+        {
+          "ok": true,
+          "status": 200,
+          "type": "video/mp4",
+          "length": "4340428"
+        }
+      ],
+      "ready": true,
+      "published": false,
+      "publishedAt": "",
+      "instagramId": "",
+      "updatedAt": "2026-07-09T09:03:57.141Z",
+      "sortAt": "2026-07-09T09:03:57.141Z",
+      "preview": "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/reels/warteliste-pro-2026-07-09/warteliste-pro-2026-07-09.mp4"
+    },
+    {
+      "file": "kundenportal-2026-07-09.reel.manifest.json",
+      "type": "reel",
+      "path": "/Users/hguencavdi/Desktop/it-cockpit/instagram-karussells/tools/kundenportal-2026-07-09.reel.manifest.json",
+      "slug": "kundenportal-2026-07-09",
+      "caption": "Zu viele Kundenfragen per Telefon, E-Mail und WhatsApp?\n\nEin Kundenportal bündelt Status, Dokumente, Nachrichten und digitale Formulare an einem Ort. Hasi Elektronic plant und entwickelt Web-Apps für lokale Betriebe in Vaihingen/Enz: praktisch, mobil und sauber angebunden.\n\nHasi Elektronic\nGrabenstraße 18, 71665 Vaihingen/Enz\nTel. 07042 / 16391\n\n#hasi #hasielektronic #vaihingenenz #kundenportal #webapp #appentwicklung #digitalisierung #automatisierung #webdesign #itservice",
+      "urlCount": 1,
+      "urls": [
+        "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/reels/kundenportal-2026-07-09/kundenportal-2026-07-09.mp4"
+      ],
+      "checks": [
+        {
+          "ok": true,
+          "status": 200,
+          "type": "video/mp4",
+          "length": "4066668"
+        }
+      ],
+      "ready": true,
+      "published": true,
+      "publishedAt": "2026-07-09T10:35:27+02:00",
+      "instagramId": "17969749943922519",
+      "updatedAt": "2026-07-09T08:34:30.927Z",
+      "sortAt": "2026-07-09T10:35:27+02:00",
+      "preview": "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/reels/kundenportal-2026-07-09/kundenportal-2026-07-09.mp4"
+    },
+    {
+      "file": "web-app-lokale-firmen-2026-07-09.manifest.json",
+      "type": "carousel",
+      "path": "/Users/hguencavdi/Desktop/it-cockpit/instagram-karussells/tools/web-app-lokale-firmen-2026-07-09.manifest.json",
+      "slug": "web-app-lokale-firmen-2026-07-09",
+      "caption": "Excel-Listen, Papierformulare und manuelle Rückfragen kosten lokalen Betrieben jeden Tag Zeit.\n\nHasi Elektronic baut moderne Web-Apps, Kundenportale, Online-Formulare und Terminlösungen, die genau zu deinem Betrieb passen. Schlank, sicher gehostet und mit persönlicher Betreuung aus Vaihingen/Enz.\n\nDu willst weniger Chaos und mehr Überblick? Dann sprechen wir über deine digitale Lösung.\n\nHasi Elektronic\nGrabenstraße 18, 71665 Vaihingen/Enz\nTel. 07042 / 16391\n\n#hasi #hasielektronic #vaihingenenz #webapp #appentwicklung #digitalisierung #automatisierung #kundenportal #onlineterminbuchung #cloudflare #supabase #mittelstand #kmu",
+      "urlCount": 7,
+      "urls": [
+        "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/web-app-lokale-firmen-2026-07-09/slide_1.png",
+        "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/web-app-lokale-firmen-2026-07-09/slide_2.png",
+        "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/web-app-lokale-firmen-2026-07-09/slide_3.png",
+        "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/web-app-lokale-firmen-2026-07-09/slide_4.png",
+        "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/web-app-lokale-firmen-2026-07-09/slide_5.png",
+        "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/web-app-lokale-firmen-2026-07-09/slide_6.png",
+        "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/web-app-lokale-firmen-2026-07-09/slide_7.png"
+      ],
+      "checks": [
+        {
+          "ok": true,
+          "status": 200,
+          "type": "image/png",
+          "length": "118338"
+        },
+        {
+          "ok": true,
+          "status": 200,
+          "type": "image/png",
+          "length": "130454"
+        },
+        {
+          "ok": true,
+          "status": 200,
+          "type": "image/png",
+          "length": "662840"
+        },
+        {
+          "ok": true,
+          "status": 200,
+          "type": "image/png",
+          "length": "139581"
+        },
+        {
+          "ok": true,
+          "status": 200,
+          "type": "image/png",
+          "length": "145089"
+        },
+        {
+          "ok": true,
+          "status": 200,
+          "type": "image/png",
+          "length": "103339"
+        },
+        {
+          "ok": true,
+          "status": 200,
+          "type": "image/png",
+          "length": "574162"
+        }
+      ],
+      "ready": true,
+      "published": true,
+      "publishedAt": "2026-07-09T10:00:00+02:00",
+      "instagramId": "17901066363463022",
+      "updatedAt": "2026-07-09T08:04:00.618Z",
+      "sortAt": "2026-07-09T10:00:00+02:00",
+      "preview": "https://pub-cf131f1d711447e384202db821c79449.r2.dev/instagram/web-app-lokale-firmen-2026-07-09/slide_1.png"
+    },
+    {
       "file": "online-terminbuchung-umlaut-2026-07-08.reel.manifest.json",
       "type": "reel",
       "path": "/Users/hguencavdi/Desktop/it-cockpit/instagram-karussells/tools/online-terminbuchung-umlaut-2026-07-08.reel.manifest.json",
@@ -705,22 +825,10 @@
   ],
   "automations": [
     {
-      "id": "hasi-instagram-wochenpost",
-      "name": "Hasi Instagram Tagespost",
+      "id": "hasi-social-media-tagesproduktion",
+      "name": "Hasi Social Media Tagesproduktion",
       "status": "ACTIVE",
-      "schedule": "08:00 Karussell / Tagespost"
-    },
-    {
-      "id": "hasi-instagram-reels-tagespost",
-      "name": "Hasi Instagram Reels Tagespost",
-      "status": "ACTIVE",
-      "schedule": "08:30 Reel"
-    },
-    {
-      "id": "hasi-instagram-story-hazirlik",
-      "name": "Hasi Instagram Story Hazirlik",
-      "status": "ACTIVE",
-      "schedule": "09:00 Story Vorbereitung"
+      "schedule": "08:00 Karussell + Reel + Story"
     },
     {
       "id": "hasi-social-media-tageskontrolle",
@@ -831,33 +939,44 @@
   ],
   "log": [
     {
+      "time": "2026-07-09T11:04:16+02:00",
+      "action": "prepare-story",
+      "status": "ready",
+      "type": "story",
+      "topic": "WarteListe Pro",
+      "slug": "warteliste-pro-2026-07-09",
+      "manifest": "warteliste-pro-2026-07-09.story.manifest.json",
+      "instagramId": "",
+      "note": "Story publish-ready vorbereitet; R2 URL HTTP 200 video/mp4. Nicht automatisch veröffentlicht."
+    },
+    {
+      "time": "2026-07-09T10:35:27+02:00",
+      "action": "publish-reel",
+      "status": "published",
+      "type": "reel",
+      "topic": "Kundenportal",
+      "slug": "kundenportal-2026-07-09",
+      "manifest": "kundenportal-2026-07-09.reel.manifest.json",
+      "instagramId": "17969749943922519",
+      "note": "Tagesproduktion nachgeholt; R2 URL HTTP 200 video/mp4; Instagram Reel veröffentlicht."
+    },
+    {
+      "time": "2026-07-09T10:00:00+02:00",
+      "action": "publish-carousel",
+      "status": "published",
+      "type": "carousel",
+      "topic": "Web-App für lokale Firmen",
+      "slug": "web-app-lokale-firmen-2026-07-09",
+      "manifest": "web-app-lokale-firmen-2026-07-09.manifest.json",
+      "instagramId": "17901066363463022",
+      "note": "Tagespost-Lauf; R2 Upload erfolgreich; Dry Run 7/7 image/png OK."
+    },
+    {
       "time": "2026-07-08T12:01:14.479Z",
       "action": "customer-updated",
       "status": "ok",
       "customerId": "keby-shop",
       "customerName": "Keby Shop"
-    },
-    {
-      "time": "2026-07-08T10:04:42+02:00",
-      "action": "publish-carousel",
-      "status": "published",
-      "type": "carousel",
-      "topic": "Hasi Safe Stick",
-      "slug": "hasi-safe-stick-2026-07-08",
-      "manifest": "hasi-safe-stick-2026-07-08.manifest.json",
-      "instagramId": "18060291389739396",
-      "note": "Automatischer/fortgesetzter Tagespost-Lauf; Dry Run 7/7 image/png OK."
-    },
-    {
-      "time": "2026-07-08T09:18:34+02:00",
-      "action": "publish-carousel",
-      "status": "published",
-      "type": "carousel",
-      "topic": "PC-Reparatur",
-      "slug": "pc-reparatur-2026-07-08",
-      "manifest": "pc-reparatur-2026-07-08.manifest.json",
-      "instagramId": "17979586548058524",
-      "note": "Manuell nachgeholt, weil 08:00-Lauf nicht sichtbar war; Dry Run 7/7 image/png OK."
     },
     {
       "time": "2026-07-08T10:10:00+02:00",
@@ -880,6 +999,28 @@
       "manifest": "",
       "instagramId": "",
       "note": "Reels-Automation ist PAUSED; letzter Reel war WLAN-Probleme am 2026-07-07."
+    },
+    {
+      "time": "2026-07-08T10:04:42+02:00",
+      "action": "publish-carousel",
+      "status": "published",
+      "type": "carousel",
+      "topic": "Hasi Safe Stick",
+      "slug": "hasi-safe-stick-2026-07-08",
+      "manifest": "hasi-safe-stick-2026-07-08.manifest.json",
+      "instagramId": "18060291389739396",
+      "note": "Automatischer/fortgesetzter Tagespost-Lauf; Dry Run 7/7 image/png OK."
+    },
+    {
+      "time": "2026-07-08T09:18:34+02:00",
+      "action": "publish-carousel",
+      "status": "published",
+      "type": "carousel",
+      "topic": "PC-Reparatur",
+      "slug": "pc-reparatur-2026-07-08",
+      "manifest": "pc-reparatur-2026-07-08.manifest.json",
+      "instagramId": "17979586548058524",
+      "note": "Manuell nachgeholt, weil 08:00-Lauf nicht sichtbar war; Dry Run 7/7 image/png OK."
     }
   ]
 }

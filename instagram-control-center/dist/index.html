@@ -659,6 +659,7 @@
         const time = hour ? `${hour}:${minute}` : "Zeit offen";
         const name = `${item.name || ""} ${item.id || ""}`.toLowerCase();
         let job = "Automation";
+        if (name.includes("tagesproduktion")) job = "Gesamtproduktion";
         if (name.includes("wochenpost") || name.includes("tagespost")) job = "Karussell / Tagespost";
         if (name.includes("reel")) job = "Reel";
         if (name.includes("story")) job = "Story Vorbereitung";

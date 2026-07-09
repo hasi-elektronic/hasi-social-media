@@ -123,9 +123,7 @@ const status = {
   },
   manifests: await manifests(log),
   automations: [
-    { id: "hasi-instagram-wochenpost", name: "Hasi Instagram Tagespost", status: "ACTIVE", schedule: "08:00 Karussell / Tagespost" },
-    { id: "hasi-instagram-reels-tagespost", name: "Hasi Instagram Reels Tagespost", status: "ACTIVE", schedule: "08:30 Reel" },
-    { id: "hasi-instagram-story-hazirlik", name: "Hasi Instagram Story Hazirlik", status: "ACTIVE", schedule: "09:00 Story Vorbereitung" },
+    { id: "hasi-social-media-tagesproduktion", name: "Hasi Social Media Tagesproduktion", status: "ACTIVE", schedule: "08:00 Karussell + Reel + Story" },
     { id: "hasi-social-media-tageskontrolle", name: "Hasi Social Media Tageskontrolle", status: "ACTIVE", schedule: "09:15 Kontrolle / fehlende Inhalte nachholen" },
   ],
   plan: nextPlan(plan),

@@ -1,32 +1,43 @@
 [
   {
+    "time": "2026-07-09T11:04:16+02:00",
+    "action": "prepare-story",
+    "status": "ready",
+    "type": "story",
+    "topic": "WarteListe Pro",
+    "slug": "warteliste-pro-2026-07-09",
+    "manifest": "warteliste-pro-2026-07-09.story.manifest.json",
+    "instagramId": "",
+    "note": "Story publish-ready vorbereitet; R2 URL HTTP 200 video/mp4. Nicht automatisch veröffentlicht."
+  },
+  {
+    "time": "2026-07-09T10:35:27+02:00",
+    "action": "publish-reel",
+    "status": "published",
+    "type": "reel",
+    "topic": "Kundenportal",
+    "slug": "kundenportal-2026-07-09",
+    "manifest": "kundenportal-2026-07-09.reel.manifest.json",
+    "instagramId": "17969749943922519",
+    "note": "Tagesproduktion nachgeholt; R2 URL HTTP 200 video/mp4; Instagram Reel veröffentlicht."
+  },
+  {
+    "time": "2026-07-09T10:00:00+02:00",
+    "action": "publish-carousel",
+    "status": "published",
+    "type": "carousel",
+    "topic": "Web-App für lokale Firmen",
+    "slug": "web-app-lokale-firmen-2026-07-09",
+    "manifest": "web-app-lokale-firmen-2026-07-09.manifest.json",
+    "instagramId": "17901066363463022",
+    "note": "Tagespost-Lauf; R2 Upload erfolgreich; Dry Run 7/7 image/png OK."
+  },
+  {
     "time": "2026-07-08T12:01:14.479Z",
     "action": "customer-updated",
     "status": "ok",
     "customerId": "keby-shop",
     "customerName": "Keby Shop"
-  },
-  {
-    "time": "2026-07-08T10:04:42+02:00",
-    "action": "publish-carousel",
-    "status": "published",
-    "type": "carousel",
-    "topic": "Hasi Safe Stick",
-    "slug": "hasi-safe-stick-2026-07-08",
-    "manifest": "hasi-safe-stick-2026-07-08.manifest.json",
-    "instagramId": "18060291389739396",
-    "note": "Automatischer/fortgesetzter Tagespost-Lauf; Dry Run 7/7 image/png OK."
-  },
-  {
-    "time": "2026-07-08T09:18:34+02:00",
-    "action": "publish-carousel",
-    "status": "published",
-    "type": "carousel",
-    "topic": "PC-Reparatur",
-    "slug": "pc-reparatur-2026-07-08",
-    "manifest": "pc-reparatur-2026-07-08.manifest.json",
-    "instagramId": "17979586548058524",
-    "note": "Manuell nachgeholt, weil 08:00-Lauf nicht sichtbar war; Dry Run 7/7 image/png OK."
   },
   {
     "time": "2026-07-08T10:10:00+02:00",
@@ -49,5 +60,27 @@
     "manifest": "",
     "instagramId": "",
     "note": "Reels-Automation ist PAUSED; letzter Reel war WLAN-Probleme am 2026-07-07."
+  },
+  {
+    "time": "2026-07-08T10:04:42+02:00",
+    "action": "publish-carousel",
+    "status": "published",
+    "type": "carousel",
+    "topic": "Hasi Safe Stick",
+    "slug": "hasi-safe-stick-2026-07-08",
+    "manifest": "hasi-safe-stick-2026-07-08.manifest.json",
+    "instagramId": "18060291389739396",
+    "note": "Automatischer/fortgesetzter Tagespost-Lauf; Dry Run 7/7 image/png OK."
+  },
+  {
+    "time": "2026-07-08T09:18:34+02:00",
+    "action": "publish-carousel",
+    "status": "published",
+    "type": "carousel",
+    "topic": "PC-Reparatur",
+    "slug": "pc-reparatur-2026-07-08",
+    "manifest": "pc-reparatur-2026-07-08.manifest.json",
+    "instagramId": "17979586548058524",
+    "note": "Manuell nachgeholt, weil 08:00-Lauf nicht sichtbar war; Dry Run 7/7 image/png OK."
   }
 ]
