@@ -181,26 +181,38 @@
         </form>
         <div class="small">Geschützter Bereich für Social-Media-Kunden.</div>
       </section>
-    </main>
-    <script>
-      document.querySelector("#loginForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const error = document.querySelector("#error");
-        error.textContent = "";
-        const body = {
-          email: document.querySelector("#email").value,
-          password: document.querySelector("#password").value,
-        };
-        const response = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        if (response.ok) {
-          const next = new URLSearchParams(window.location.search).get("next") || "/app";
-          window.location.href = next.startsWith("/") ? next : "/app";
-          return;
+      </main>
+      <script>
+        function safeRedirectTarget(value) {
+          const fallback = "/app";
+          const target = String(value || "").trim();
+          if (!target || !target.startsWith("/") || target.startsWith("//")) return fallback;
+          if (target === "/app" || target.startsWith("/app?") || target.startsWith("/app#")) return target;
+          if (target === "/admin" || target.startsWith("/admin?") || target.startsWith("/admin#")) return target;
+          if (/^\/kunde\/[a-z0-9-]+([/?#].*)?$/i.test(target)) return target;
+          return fallback;
         }
+
+        document.querySelector("#loginForm").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const error = document.querySelector("#error");
+          error.textContent = "";
+          const requestedNext = safeRedirectTarget(new URLSearchParams(window.location.search).get("next"));
+          const body = {
+            email: document.querySelector("#email").value,
+            password: document.querySelector("#password").value,
+            next: requestedNext,
+          };
+          const response = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          if (response.ok) {
+            const result = await response.json().catch(() => ({}));
+            window.location.assign(safeRedirectTarget(result.redirectTo || requestedNext));
+            return;
+          }
         error.textContent = "Login fehlgeschlagen. Bitte Zugangsdaten prüfen.";
       });
     </script>

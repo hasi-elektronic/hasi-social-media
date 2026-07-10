@@ -75,6 +75,15 @@ function clearSessionCookie() {
   return `${SESSION_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
 }
 
+function safeRedirectTarget(value, fallback = "/app") {
+  const target = String(value || "").trim();
+  if (!target || !target.startsWith("/") || target.startsWith("//")) return fallback;
+  if (target === "/app" || target.startsWith("/app?") || target.startsWith("/app#")) return target;
+  if (target === "/admin" || target.startsWith("/admin?") || target.startsWith("/admin#")) return target;
+  if (/^\/kunde\/[a-z0-9-]+([/?#].*)?$/i.test(target)) return target;
+  return fallback;
+}
+
 async function serveAsset(env, path, request) {
   const url = new URL(request.url);
   url.pathname = path;
@@ -90,16 +99,17 @@ async function handleLogin(request, env) {
   const hash = await sha256Hex(`${salt}:${password}`);
   const hashMatches = env.COCKPIT_PASSWORD_HASH && hash === env.COCKPIT_PASSWORD_HASH;
   const secretMatches = env.COCKPIT_PASSWORD && password === env.COCKPIT_PASSWORD;
-  if (!expectedEmail || email !== expectedEmail || (!hashMatches && !secretMatches)) {
-    return json({ ok: false }, 401);
-  }
-  const session = await createSession(email, env);
-  return new Response(JSON.stringify({ ok: true }), {
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Set-Cookie": `${SESSION_COOKIE}=${session}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_SECONDS}`,
-    },
-  });
+    if (!expectedEmail || email !== expectedEmail || (!hashMatches && !secretMatches)) {
+      return json({ ok: false }, 401);
+    }
+    const session = await createSession(email, env);
+    const redirectTo = safeRedirectTarget(body.next, "/app");
+    return new Response(JSON.stringify({ ok: true, redirectTo }), {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Set-Cookie": `${SESSION_COOKIE}=${session}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_SECONDS}`,
+      },
+    });
 }
 
 function contentTypeOk(type, expected) {
@@ -449,14 +459,17 @@ export default {
         },
       });
     }
-    if (url.pathname === "/login" || url.pathname === "/login.html") {
-      return new Response(LOGIN_HTML, {
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Set-Cookie": clearSessionCookie(),
-        },
-      });
-    }
+      if (url.pathname === "/login" || url.pathname === "/login.html") {
+        if (await verifySession(request, env)) {
+          return Response.redirect(`${url.origin}${safeRedirectTarget(url.searchParams.get("next"), "/app")}`, 302);
+        }
+        return new Response(LOGIN_HTML, {
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store",
+          },
+        });
+      }
     if (url.pathname === "/api/login" && request.method === "POST") {
       return handleLogin(request, env);
     }
@@ -475,9 +488,9 @@ export default {
 
     if (!(await verifySession(request, env))) {
       if (url.pathname.startsWith("/api/")) return json({ error: "Unauthorized" }, 401);
-      const next = `${url.pathname}${url.search}`;
-      return Response.redirect(`${url.origin}/login?next=${encodeURIComponent(next)}`, 302);
-    }
+        const next = safeRedirectTarget(`${url.pathname}${url.search}`, "/app");
+        return Response.redirect(`${url.origin}/login?next=${encodeURIComponent(next)}`, 302);
+      }
 
     if (url.pathname === "/admin" || url.pathname === "/admin.html") {
       return new Response(ADMIN_HTML, {
