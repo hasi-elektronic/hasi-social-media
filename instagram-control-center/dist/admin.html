@@ -392,6 +392,13 @@
           .replaceAll("'", "&#039;");
       }
 
+      function customerPath(customer) {
+        const id = customer?.id || "";
+        if (id === "hasi-elektronic") return "/hasi-elektronic";
+        if (id === "keby-shop" || customer?.instagram === "@kebyshop") return "/kebyshop";
+        return `/kunde/${encodeURIComponent(id)}`;
+      }
+
       function onboardingStatus(customer) {
         const ob = customer.onboarding || {};
         const mediaOk = Boolean(ob.productPhotos && ob.productList && ob.instagramBusiness && ob.facebookPage && ob.metaAccess && ob.publishPermission !== "missing");
@@ -439,7 +446,7 @@
             ${customer.onboarding?.notes ? `<p class="small" style="margin:12px 0 0"><strong>Notiz:</strong> ${escapeHtml(customer.onboarding.notes)}</p>` : ""}
             ${customer.positioning ? `<p class="small" style="margin:12px 0 0">${escapeHtml(customer.positioning)}</p>` : ""}
             <button class="btn secondary small js-edit-customer" type="button" data-id="${escapeHtml(customer.id)}">Bearbeiten</button>
-            <a class="btn secondary small" href="/kunde/${encodeURIComponent(customer.id)}">Kundenseite öffnen</a>
+            <a class="btn secondary small" href="${customerPath(customer)}">Kundenseite öffnen</a>
           </article>
         `).join("") || `<div class="small">Noch keine Kunden angelegt.</div>`;
       }

@@ -72,6 +72,12 @@
         border-radius: 8px; margin-bottom: 6px; font-size: 14px;
       }
       nav a.active, nav a:hover { background: rgba(58, 186, 223, .18); color: white; }
+      nav a.logout-link {
+        margin-top: 18px;
+        color: #fff;
+        background: rgba(255, 107, 0, .16);
+      }
+      nav a.logout-link:hover { background: rgba(255, 107, 0, .28); }
       main { padding: 30px 28px 44px; max-width: 1560px; width: 100%; }
       header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin-bottom: 22px; }
       .title-row { display: flex; align-items: center; gap: 14px; }
@@ -410,6 +416,7 @@
           <a href="#plan">14 Tage Plan</a>
           <a href="#automations">Automationen</a>
           <a href="#logs">Logs</a>
+          <a class="logout-link" href="/logout">Abmelden</a>
         </nav>
       </aside>
       <main>
@@ -424,6 +431,7 @@
           <div class="toolbar">
             <button class="btn secondary" id="refreshBtn">Status aktualisieren</button>
             <a class="btn orange" id="instagramLink" href="https://www.instagram.com/hasi_elektronic/" target="_blank">Instagram öffnen</a>
+            <a class="btn secondary" href="/logout">Abmelden</a>
           </div>
         </header>
 
@@ -491,7 +499,7 @@
       </main>
     </div>
     <div class="modal" id="previewModal" aria-hidden="true">
-      <button class="modal-close" id="modalClose" type="button" aria-label="Preview schliessen">×</button>
+      <button class="modal-close" id="modalClose" type="button" aria-label="Preview schließen">×</button>
       <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="modal-stage" id="modalStage"></div>
         <div class="modal-info">
@@ -505,7 +513,15 @@
     </div>
 
     <script>
+      const CUSTOMER_ROUTE_ALIASES = {
+        "/hasi-elektronic": "hasi-elektronic",
+        "/kebyshop": "keby-shop",
+      };
+
       function requestedCustomerFromUrl() {
+        if (CUSTOMER_ROUTE_ALIASES[window.location.pathname]) {
+          return CUSTOMER_ROUTE_ALIASES[window.location.pathname];
+        }
         const match = window.location.pathname.match(/^\/kunde\/([^/?#]+)/);
         if (match) return decodeURIComponent(match[1]);
         return new URLSearchParams(window.location.search).get("customer") || "hasi-elektronic";

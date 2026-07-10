@@ -142,6 +142,9 @@
         font-size: 13px;
         font-weight: 700;
       }
+      .error.success {
+        color: #067647;
+      }
       .small {
         margin-top: 24px;
         color: var(--muted);
@@ -176,7 +179,7 @@
         <h2>Anmelden</h2>
         <p>Bitte mit dem Hasi Zugang anmelden, bevor die Social-Media-Zentrale geöffnet wird.</p>
         <form id="loginForm" method="post" action="/api/login" novalidate>
-          <input id="next" name="next" type="hidden" value="/app" />
+          <input id="next" name="next" type="hidden" value="/hasi-elektronic" />
           <label for="email">E-Mail</label>
           <input id="email" name="email" type="email" autocomplete="username" required />
           <label for="password">Passwort</label>
@@ -189,11 +192,13 @@
       </main>
       <script>
         function safeRedirectTarget(value) {
-          const fallback = "/app";
+          const fallback = "/hasi-elektronic";
           const target = String(value || "").trim();
           if (!target || !target.startsWith("/") || target.startsWith("//")) return fallback;
           if (target === "/app" || target.startsWith("/app?") || target.startsWith("/app#")) return target;
           if (target === "/admin" || target.startsWith("/admin?") || target.startsWith("/admin#")) return target;
+          if (target === "/hasi-elektronic" || target.startsWith("/hasi-elektronic?") || target.startsWith("/hasi-elektronic#")) return target;
+          if (target === "/kebyshop" || target.startsWith("/kebyshop?") || target.startsWith("/kebyshop#")) return target;
           if (/^\/kunde\/[a-z0-9-]+([/?#].*)?$/i.test(target)) return target;
           return fallback;
         }
@@ -206,6 +211,11 @@
       if (params.get("error") === "1") {
         document.querySelector("#error").textContent = "Login fehlgeschlagen. Bitte Zugangsdaten prüfen.";
       }
+      if (params.get("loggedOut") === "1") {
+        const error = document.querySelector("#error");
+        error.classList.add("success");
+        error.textContent = "Du bist abgemeldet.";
+      }
 
       document.querySelector("#loginForm").addEventListener("submit", (event) => {
         event.preventDefault();
@@ -215,6 +225,7 @@
         const emailInput = document.querySelector("#email");
         const passwordInput = document.querySelector("#password");
         error.textContent = "";
+        error.classList.remove("success");
         const email = emailInput.value.trim();
         const password = passwordInput.value;
         if (!email) {

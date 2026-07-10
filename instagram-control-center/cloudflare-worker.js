@@ -90,11 +90,17 @@ function redirectNoStore(location, status = 302) {
   });
 }
 
-function safeRedirectTarget(value, fallback = "/app") {
+function isCustomerPagePath(pathname) {
+  return pathname === "/hasi-elektronic" || pathname === "/kebyshop";
+}
+
+function safeRedirectTarget(value, fallback = "/hasi-elektronic") {
   const target = String(value || "").trim();
   if (!target || !target.startsWith("/") || target.startsWith("//")) return fallback;
   if (target === "/app" || target.startsWith("/app?") || target.startsWith("/app#")) return target;
   if (target === "/admin" || target.startsWith("/admin?") || target.startsWith("/admin#")) return target;
+  if (target === "/hasi-elektronic" || target.startsWith("/hasi-elektronic?") || target.startsWith("/hasi-elektronic#")) return target;
+  if (target === "/kebyshop" || target.startsWith("/kebyshop?") || target.startsWith("/kebyshop#")) return target;
   if (/^\/kunde\/[a-z0-9-]+([/?#].*)?$/i.test(target)) return target;
   return fallback;
 }
@@ -118,7 +124,7 @@ async function handleLogin(request, env) {
   const hash = await sha256Hex(`${salt}:${password}`);
   const hashMatches = env.COCKPIT_PASSWORD_HASH && hash === env.COCKPIT_PASSWORD_HASH;
   const secretMatches = env.COCKPIT_PASSWORD && password === env.COCKPIT_PASSWORD;
-  const redirectTo = safeRedirectTarget(body.next, "/app");
+  const redirectTo = safeRedirectTarget(body.next, "/hasi-elektronic");
   if (!expectedEmail || email !== expectedEmail || (!hashMatches && !secretMatches)) {
     if (isFormPost) {
       return new Response(null, {
@@ -497,7 +503,7 @@ export default {
     }
     if (url.pathname === "/login" || url.pathname === "/login.html") {
       if (await verifySession(request, env)) {
-        return redirectNoStore(`${url.origin}${safeRedirectTarget(url.searchParams.get("next"), "/app")}`);
+        return redirectNoStore(`${url.origin}${safeRedirectTarget(url.searchParams.get("next"), "/hasi-elektronic")}`);
       }
       return new Response(LOGIN_HTML, {
         headers: noStoreHeaders({
@@ -515,7 +521,7 @@ export default {
       return new Response(null, {
         status: 302,
         headers: noStoreHeaders({
-          Location: "/login",
+          Location: "/login?loggedOut=1",
           "Set-Cookie": clearSessionCookie(),
         }),
       });
@@ -523,7 +529,7 @@ export default {
 
     if (!(await verifySession(request, env))) {
       if (url.pathname.startsWith("/api/")) return json({ error: "Unauthorized" }, 401);
-      const next = safeRedirectTarget(`${url.pathname}${url.search}`, "/app");
+      const next = safeRedirectTarget(`${url.pathname}${url.search}`, "/hasi-elektronic");
       return redirectNoStore(`${url.origin}/login?next=${encodeURIComponent(next)}`);
     }
 
@@ -532,7 +538,7 @@ export default {
         headers: noStoreHeaders({ "Content-Type": "text/html; charset=utf-8" }),
       });
     }
-    if (url.pathname === "/app" || url.pathname === "/app.html" || url.pathname.startsWith("/kunde/")) {
+    if (url.pathname === "/app" || url.pathname === "/app.html" || url.pathname.startsWith("/kunde/") || isCustomerPagePath(url.pathname)) {
       return new Response(APP_HTML, {
         headers: noStoreHeaders({
           "Content-Type": "text/html; charset=utf-8",

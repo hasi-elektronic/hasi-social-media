@@ -69,11 +69,17 @@ function slugify(value) {
     .slice(0, 64);
 }
 
-function safeRedirectTarget(value, fallback = "/app") {
+function isCustomerPagePath(pathname) {
+  return pathname === "/hasi-elektronic" || pathname === "/kebyshop";
+}
+
+function safeRedirectTarget(value, fallback = "/hasi-elektronic") {
   const target = String(value || "").trim();
   if (!target || !target.startsWith("/") || target.startsWith("//")) return fallback;
   if (target === "/app" || target.startsWith("/app?") || target.startsWith("/app#")) return target;
   if (target === "/admin" || target.startsWith("/admin?") || target.startsWith("/admin#")) return target;
+  if (target === "/hasi-elektronic" || target.startsWith("/hasi-elektronic?") || target.startsWith("/hasi-elektronic#")) return target;
+  if (target === "/kebyshop" || target.startsWith("/kebyshop?") || target.startsWith("/kebyshop#")) return target;
   if (/^\/kunde\/[a-z0-9-]+([/?#].*)?$/i.test(target)) return target;
   return fallback;
 }
@@ -91,7 +97,7 @@ async function loginLocal(req) {
   const password = String(input.password || "");
   const expectedEmail = String(process.env.COCKPIT_EMAIL || "").trim().toLowerCase();
   const expectedPassword = String(process.env.COCKPIT_PASSWORD || "");
-  const redirectTo = safeRedirectTarget(input.next, "/app");
+  const redirectTo = safeRedirectTarget(input.next, "/hasi-elektronic");
   if ((expectedEmail || expectedPassword) && (email !== expectedEmail || password !== expectedPassword)) {
     if (isFormPost) {
       return {
@@ -486,7 +492,7 @@ async function serveStatic(req, res, pathname) {
       ? "demo.html"
       : pathname === "/login"
         ? "login.html"
-        : pathname === "/app" || pathname.startsWith("/kunde/")
+        : pathname === "/app" || pathname.startsWith("/kunde/") || isCustomerPagePath(pathname)
           ? "index.html"
           : pathname === "/admin"
             ? "admin.html"
@@ -505,7 +511,7 @@ const server = createServer(async (req, res) => {
   try {
     if (url.pathname === "/logout") {
       res.writeHead(302, {
-        Location: "/login",
+        Location: "/login?loggedOut=1",
         "Set-Cookie": `${sessionCookie}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0`,
       });
       res.end();
