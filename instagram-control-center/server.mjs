@@ -80,7 +80,13 @@ function safeRedirectTarget(value, fallback = "/app") {
 
 async function loginLocal(req) {
   const body = await readRequestBody(req);
-  const input = body ? JSON.parse(body) : {};
+  const contentType = req.headers["content-type"] || "";
+  const isFormPost = String(contentType).toLowerCase().includes("application/x-www-form-urlencoded");
+  const input = body
+    ? isFormPost
+      ? Object.fromEntries(new URLSearchParams(body))
+      : JSON.parse(body)
+    : {};
   const email = String(input.email || "").trim().toLowerCase();
   const password = String(input.password || "");
   const expectedEmail = String(process.env.COCKPIT_EMAIL || "").trim().toLowerCase();
@@ -91,9 +97,20 @@ async function loginLocal(req) {
   if (!email || !password) {
     return { status: 400, body: { ok: false, error: "E-Mail und Passwort fehlen" }, headers: {} };
   }
+  const redirectTo = safeRedirectTarget(input.next, "/app");
+  if (isFormPost) {
+    return {
+      status: 303,
+      body: "",
+      headers: {
+        Location: redirectTo,
+        "Set-Cookie": `${sessionCookie}=local-dev; HttpOnly; SameSite=Lax; Path=/; Max-Age=43200`,
+      },
+    };
+  }
   return {
     status: 200,
-    body: { ok: true, redirectTo: safeRedirectTarget(input.next, "/app") },
+    body: { ok: true, redirectTo },
     headers: {
       "Set-Cookie": `${sessionCookie}=local-dev; HttpOnly; SameSite=Lax; Path=/; Max-Age=43200`,
     },
@@ -476,6 +493,11 @@ const server = createServer(async (req, res) => {
     }
     if (url.pathname === "/api/login" && req.method === "POST") {
       const result = await loginLocal(req);
+      if (result.status === 303) {
+        res.writeHead(303, result.headers);
+        res.end();
+        return;
+      }
       send(res, result.status, result.body, result.headers);
       return;
     }

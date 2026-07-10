@@ -92,7 +92,11 @@ async function serveAsset(env, path, request) {
 }
 
 async function handleLogin(request, env) {
-  const body = await request.json().catch(() => ({}));
+  const contentType = request.headers.get("Content-Type") || "";
+  const isFormPost = contentType.toLowerCase().includes("application/x-www-form-urlencoded");
+  const body = isFormPost
+    ? Object.fromEntries(new URLSearchParams(await request.text()))
+    : await request.json().catch(() => ({}));
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
   const expectedEmail = String(env.COCKPIT_EMAIL || "").trim().toLowerCase();
@@ -102,15 +106,25 @@ async function handleLogin(request, env) {
   const secretMatches = env.COCKPIT_PASSWORD && password === env.COCKPIT_PASSWORD;
     if (!expectedEmail || email !== expectedEmail || (!hashMatches && !secretMatches)) {
       return json({ ok: false }, 401);
-    }
-    const session = await createSession(email, env);
-    const redirectTo = safeRedirectTarget(body.next, "/app");
-    return new Response(JSON.stringify({ ok: true, redirectTo }), {
+  }
+  const session = await createSession(email, env);
+  const redirectTo = safeRedirectTarget(body.next, "/app");
+  const cookie = `${SESSION_COOKIE}=${session}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_SECONDS}`;
+  if (isFormPost) {
+    return new Response(null, {
+      status: 303,
       headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Set-Cookie": `${SESSION_COOKIE}=${session}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_SECONDS}`,
+        Location: redirectTo,
+        "Set-Cookie": cookie,
       },
     });
+  }
+  return new Response(JSON.stringify({ ok: true, redirectTo }), {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Set-Cookie": cookie,
+    },
+  });
 }
 
 function contentTypeOk(type, expected) {

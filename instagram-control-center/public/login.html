@@ -175,7 +175,8 @@
       <section class="login">
         <h2>Anmelden</h2>
         <p>Bitte mit dem Hasi Zugang anmelden, bevor die Social-Media-Zentrale geöffnet wird.</p>
-        <form id="loginForm" novalidate>
+        <form id="loginForm" method="post" action="/api/login" novalidate>
+          <input id="next" name="next" type="hidden" value="/app" />
           <label for="email">E-Mail</label>
           <input id="email" name="email" type="email" autocomplete="username" required />
           <label for="password">Passwort</label>
@@ -197,8 +198,8 @@
           return fallback;
         }
 
-        document.querySelector("#loginForm").addEventListener("submit", async (event) => {
-          event.preventDefault();
+      document.querySelector("#loginForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
           const error = document.querySelector("#error");
           const button = document.querySelector("#loginButton");
           const emailInput = document.querySelector("#email");
@@ -216,15 +217,16 @@
             emailInput.focus();
             return;
           }
-          if (!password) {
-            error.textContent = "Bitte Passwort eingeben.";
-            passwordInput.focus();
-            return;
-          }
-          const requestedNext = safeRedirectTarget(new URLSearchParams(window.location.search).get("next"));
-          const body = {
-            email,
-            password,
+        if (!password) {
+          error.textContent = "Bitte Passwort eingeben.";
+          passwordInput.focus();
+          return;
+        }
+        const requestedNext = safeRedirectTarget(new URLSearchParams(window.location.search).get("next"));
+        document.querySelector("#next").value = requestedNext;
+        const body = {
+          email,
+          password,
             next: requestedNext,
           };
           button.disabled = true;
