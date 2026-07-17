@@ -46,6 +46,8 @@ interface Session {
 // Allowed origins for browser-based requests (frontend).
 // Agent native HTTP requests don't send Origin header, so they bypass.
 const ALLOWED_ORIGINS = [
+  'https://it-cockpit.de',                   // production custom domain (YOL B)
+  'https://www.it-cockpit.de',
   'https://it-cockpit.pages.dev',
   'https://it-cockpit.hasi-elektronic.de',  // future custom domain
   'http://localhost:8788',                   // wrangler pages dev
