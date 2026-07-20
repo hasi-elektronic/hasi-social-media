@@ -1,1112 +1,847 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0b1117">
     <title>Hasi Social Media</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
       :root {
         --blue: #3abadf;
-        --blue-2: #41aade;
-        --ink: #111827;
-        --muted: #667085;
-        --line: #d8eef5;
-        --bg: #f4f9fc;
-        --panel: #ffffff;
-        --nav: #0d1b2a;
-        --nav-soft: #13283b;
+        --blue-dark: #087696;
         --orange: #ff6b00;
-        --green: #12b76a;
-        --red: #ef4444;
+        --green: #18a56b;
+        --red: #d92d20;
+        --ink: #101828;
+        --muted: #667085;
+        --line: #e4e7ec;
+        --soft: #f5f7f9;
+        --white: #fff;
+        --studio: #0b1117;
+        --studio-soft: #151d25;
       }
       * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
       body {
         margin: 0;
-        font-family: "Nunito Sans", system-ui, sans-serif;
+        min-width: 320px;
         color: var(--ink);
-        background:
-          linear-gradient(180deg, rgba(58, 186, 223, .08), transparent 280px),
-          var(--bg);
-        overflow-x: hidden;
+        background: #eef2f5;
+        font-family: "Nunito Sans", system-ui, sans-serif;
       }
-      button, input, textarea { font: inherit; }
-      h1, h2, h3, h4, .brand b {
-        font-family: "Plus Jakarta Sans", "Nunito Sans", system-ui, sans-serif;
-      }
-      .layout { min-height: 100vh; display: grid; grid-template-columns: 280px 1fr; }
-      aside {
-        background: linear-gradient(180deg, var(--nav), #081522);
-        color: white;
-        padding: 26px 22px;
+      body.modal-open { overflow: hidden; }
+      button, a { font: inherit; }
+      button { border: 0; }
+      h1, h2, h3, .brand-name { font-family: "Plus Jakarta Sans", system-ui, sans-serif; letter-spacing: 0; }
+      .app { min-height: 100vh; display: grid; grid-template-columns: 244px minmax(0, 1fr); }
+      .sidebar {
         position: sticky;
         top: 0;
         height: 100vh;
-      }
-      .brand {
-        display: grid;
-        grid-template-columns: 56px 1fr;
-        align-items: center;
-        gap: 13px;
-        margin-bottom: 30px;
-        padding-bottom: 22px;
-        border-bottom: 1px solid rgba(216, 238, 245, .14);
-      }
-      .mark {
-        width: 56px; height: 56px; border-radius: 12px;
-        background: #fff; display: grid; place-items: center;
-        box-shadow: 0 14px 34px rgba(0, 0, 0, .24);
-        overflow: hidden;
-      }
-      .mark img {
-        width: 42px;
-        height: 42px;
-        object-fit: contain;
-      }
-      .brand strong { display: block; font-size: 16px; line-height: 1.15; }
-      .brand span { display: block; color: #a7dff0; font-size: 12px; margin-top: 4px; }
-      nav a {
-        display: flex; align-items: center; gap: 10px;
-        color: #cceefa; text-decoration: none; padding: 11px 12px;
-        border-radius: 8px; margin-bottom: 6px; font-size: 14px;
-      }
-      nav a.active, nav a:hover { background: rgba(58, 186, 223, .18); color: white; }
-      nav a.logout-link {
-        margin-top: 18px;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 16px;
         color: #fff;
-        background: rgba(255, 107, 0, .16);
+        background: var(--studio);
       }
-      nav a.logout-link:hover { background: rgba(255, 107, 0, .28); }
-      main { padding: 30px 28px 44px; max-width: 1560px; width: 100%; min-width: 0; }
-      header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin-bottom: 22px; }
-      .title-row { display: flex; align-items: center; gap: 14px; }
-      .header-logo {
-        width: 58px;
-        height: 58px;
-        border-radius: 12px;
-        background: white;
-        border: 1px solid var(--line);
-        padding: 8px;
-        object-fit: contain;
-        box-shadow: 0 10px 28px rgba(26, 95, 117, .08);
-      }
-      h1 { margin: 0; font-size: 34px; line-height: 1.05; letter-spacing: 0; }
-      .subtitle { margin: 8px 0 0; color: var(--muted); }
-      .toolbar { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
-      .btn {
-        border: 0; border-radius: 8px; padding: 11px 14px;
-        background: var(--blue); color: white; font-weight: 700;
-        cursor: pointer; display: inline-flex; gap: 8px; align-items: center;
-      }
-      .btn.secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
-      .btn.orange { background: var(--orange); }
-      .btn:disabled { opacity: .55; cursor: wait; }
-      .grid { display: grid; gap: 16px; }
-      .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      .card {
-        background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-        padding: 18px; box-shadow: 0 10px 26px rgba(26, 95, 117, .07);
-        min-width: 0;
-      }
-      .stat-label { color: var(--muted); font-size: 13px; }
-      .stat-value { font-size: 28px; font-weight: 800; margin-top: 8px; }
-      .ok { color: var(--green); }
-      .bad { color: var(--red); }
-      .section { margin-top: 22px; }
-      .section h2 { font-size: 20px; margin: 0 0 12px; }
-      .content-grid { grid-template-columns: 1.2fr .8fr; align-items: start; }
-      table { width: 100%; border-collapse: collapse; font-size: 14px; }
-      th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eef6f9; vertical-align: top; }
-      th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
-      .pill {
-        display: inline-flex; align-items: center; border-radius: 999px; padding: 5px 9px;
-        background: #eef9fc; color: #17677f; font-size: 12px; font-weight: 700;
-      }
-      .pill.green { background: #ecfdf3; color: #067647; }
-      .pill.red { background: #fef3f2; color: #b42318; }
-      .pill.orange { background: #fff7ed; color: #c2410c; }
-      .pill.gray { background: #f2f4f7; color: #475467; }
-      .preview {
-        width: 92px; aspect-ratio: 4/5; object-fit: cover; border-radius: 8px;
-        border: 1px solid var(--line); background: #edf7fb;
-        cursor: zoom-in;
-        transition: transform .15s ease, box-shadow .15s ease;
-      }
-      .preview:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(26, 95, 117, .14); }
-      video.preview { aspect-ratio: 9/16; }
-      .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-      .small { font-size: 12px; color: var(--muted); }
-      pre {
-        white-space: pre-wrap; margin: 0; background: #0d1b2a; color: #d8eef5;
-        border-radius: 8px; padding: 14px; max-height: 260px; overflow: auto;
-        font-size: 12px;
-      }
-      .plan-row { display: grid; grid-template-columns: 118px 1fr 54px 54px 64px; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eef6f9; align-items: center; }
-      .plan-head {
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: .04em;
-        text-transform: uppercase;
-      }
-      .topic { font-weight: 700; }
-      .notice {
-        border-left: 4px solid var(--orange); background: #fff7ed;
-        padding: 12px 14px; border-radius: 8px; color: #9a3412; font-size: 14px;
-      }
-      .today-panel {
-        display: grid;
-        gap: 10px;
-        margin-bottom: 12px;
-      }
-      .today-head {
+      .brand { display: flex; align-items: center; gap: 12px; padding: 0 8px 24px; border-bottom: 1px solid #26313b; }
+      .brand-logo { width: 44px; height: 44px; object-fit: contain; padding: 6px; border-radius: 8px; background: #fff; }
+      .brand-name { display: block; font-size: 14px; font-weight: 800; }
+      .brand-product { display: block; margin-top: 3px; color: #8edcf1; font-size: 12px; }
+      .nav { display: grid; gap: 5px; margin-top: 24px; }
+      .nav-button {
+        width: 100%;
         display: flex;
-        justify-content: space-between;
-        gap: 12px;
         align-items: center;
-      }
-      .today-head strong { font-size: 15px; }
-      .today-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-      }
-      .today-item {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 12px;
-        background: #f8fcfe;
-      }
-      .today-item strong {
-        display: block;
-        margin: 8px 0 4px;
-        font-size: 14px;
-      }
-      .today-item .small { line-height: 1.4; }
-      .schedule-legend {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
-        margin-bottom: 14px;
-      }
-      .schedule-item {
-        border: 1px solid var(--line);
-        border-radius: 8px;
+        gap: 11px;
         padding: 11px 12px;
-        background: #f8fcfe;
+        border-radius: 7px;
+        color: #aeb8c2;
+        background: transparent;
+        text-align: left;
+        font-weight: 800;
+        cursor: pointer;
       }
-      .schedule-item strong {
-        display: block;
-        font-size: 18px;
-        line-height: 1;
-        color: #075f78;
-      }
-      .schedule-item span {
-        display: block;
-        margin-top: 6px;
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-      }
-      .queue-groups {
-        display: grid;
-        gap: 18px;
-      }
-      .queue-group {
-        border: 1px solid #eef6f9;
-        border-radius: 8px;
-        overflow: hidden;
-        background: #fff;
-      }
-      .queue-head {
+      .nav-button:hover, .nav-button.active { color: #fff; background: #1b2731; }
+      .nav-button.active { box-shadow: inset 3px 0 var(--blue); }
+      .nav-icon { width: 20px; height: 20px; display: grid; place-items: center; color: currentColor; }
+      .nav-icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .sidebar-foot { margin-top: auto; display: grid; gap: 10px; }
+      .account { padding: 12px; border-top: 1px solid #26313b; color: #aeb8c2; font-size: 12px; }
+      .account strong { display: block; color: #fff; font-size: 13px; }
+      .logout { color: #aeb8c2; text-decoration: none; padding: 10px 12px; font-size: 13px; font-weight: 800; }
+      .main { min-width: 0; padding: 0 28px 48px; }
+      .topbar {
+        min-height: 82px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
-        padding: 13px 14px;
-        background: #f8fcfe;
-        border-bottom: 1px solid #eef6f9;
+        gap: 20px;
+        border-bottom: 1px solid #d8dde3;
       }
-      .queue-head h3 {
-        margin: 0;
-        font-size: 16px;
-      }
-      .queue-counts {
-        display: flex;
+      .topbar h1 { margin: 0; font-size: 25px; line-height: 1.2; }
+      .topbar p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+      .top-actions { display: flex; align-items: center; gap: 9px; }
+      .icon-button, .button {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         gap: 8px;
-        flex-wrap: wrap;
+        border-radius: 7px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 800;
       }
-      .modal {
+      .icon-button { width: 40px; color: #344054; background: #fff; border: 1px solid #d0d5dd; }
+      .icon-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .button { padding: 10px 14px; color: #fff; background: var(--blue-dark); }
+      .button.secondary { color: #344054; background: #fff; border: 1px solid #d0d5dd; }
+      .button.publish { color: #fff; background: var(--orange); }
+      .button:disabled { opacity: .5; cursor: not-allowed; }
+      .view { display: none; padding-top: 26px; }
+      .view.active { display: block; }
+      .view-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+      .view-head h2 { margin: 0; font-size: 20px; }
+      .view-head p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+      .count { color: #475467; font-size: 12px; font-weight: 800; }
+      .queue-layout { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 18px; align-items: start; }
+      .queue { min-width: 0; border: 1px solid #d8dde3; background: #fff; }
+      .queue-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; min-height: 56px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+      .filters { display: flex; gap: 4px; }
+      .filter {
+        padding: 8px 11px;
+        border-radius: 6px;
+        color: #667085;
+        background: transparent;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .filter.active { color: #075f78; background: #e9f8fc; }
+      .content-list { display: grid; }
+      .content-row {
+        display: grid;
+        grid-template-columns: 132px minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .content-row:last-child { border-bottom: 0; }
+      .thumb { position: relative; width: 132px; height: 165px; overflow: hidden; background: var(--studio-soft); cursor: pointer; }
+      .thumb.video { width: 105px; height: 187px; justify-self: center; }
+      .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .play { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.08); pointer-events: none; }
+      .play::before { content: ""; width: 42px; height: 42px; border-radius: 50%; background: rgba(8,15,21,.76); }
+      .play::after { content: ""; position: absolute; margin-left: 3px; border-left: 11px solid #fff; border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+      .content-copy { min-width: 0; }
+      .meta { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+      .type { color: #075f78; font-weight: 800; }
+      .content-copy h3 { margin: 8px 0 6px; font-size: 17px; line-height: 1.3; text-transform: none; }
+      .caption { max-width: 660px; margin: 0; color: #667085; font-size: 13px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .status { display: inline-flex; align-items: center; gap: 6px; margin-top: 11px; color: #b54708; font-size: 12px; font-weight: 800; }
+      .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #f79009; }
+      .status.published { color: #067647; }
+      .status.published::before { background: var(--green); }
+      .row-action { display: grid; gap: 8px; width: 174px; }
+      .row-action .button { width: 100%; }
+      .empty { padding: 70px 20px; text-align: center; }
+      .empty-mark { width: 52px; height: 52px; display: grid; place-items: center; margin: 0 auto 14px; border-radius: 50%; color: #067647; background: #eafaf3; font-size: 25px; }
+      .empty h3 { margin: 0; font-size: 17px; }
+      .empty p { margin: 7px auto 0; max-width: 400px; color: var(--muted); font-size: 13px; }
+      .today-panel { padding: 18px; color: #fff; background: var(--studio); }
+      .today-panel h3 { margin: 0; font-size: 15px; }
+      .today-date { margin-top: 4px; color: #8b98a5; font-size: 12px; }
+      .today-progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 18px 0; }
+      .today-progress span { height: 4px; background: #2a3742; }
+      .today-progress span.done { background: var(--blue); }
+      .today-list { display: grid; gap: 13px; }
+      .today-item { display: grid; grid-template-columns: 42px 1fr auto; gap: 10px; align-items: center; }
+      .today-time { color: #8b98a5; font-size: 11px; }
+      .today-item strong { font-size: 13px; }
+      .today-state { font-size: 11px; font-weight: 800; color: #fdb022; }
+      .today-state.done { color: #6ce9a6; }
+      .plan-shell, .profile-shell { border: 1px solid #d8dde3; background: #fff; }
+      .plan-row { display: grid; grid-template-columns: 120px minmax(160px, 1fr) repeat(4, 88px); gap: 12px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+      .plan-row:last-child { border-bottom: 0; }
+      .plan-row.head { color: #667085; background: #f8fafb; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+      .plan-topic { font-weight: 800; }
+      .time-tag { color: #075f78; font-size: 12px; font-weight: 800; }
+      .editorial-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; padding: 18px 20px; color: #fff; background: var(--studio); }
+      .editorial-toolbar small { display: block; margin-bottom: 5px; color: #98a6b3; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+      .editorial-toolbar strong { font-size: 18px; }
+      .week-status { display: inline-flex; align-items: center; min-height: 30px; padding: 0 11px; color: #075f78; background: #e7f8fc; font-size: 11px; font-weight: 900; }
+      .week-status.approved, .week-status.locked { color: #067647; background: #dcfae6; }
+      .week-status.fallback { color: #b54708; background: #fff1e8; }
+      .editorial-actions { display: flex; gap: 9px; align-items: center; }
+      .editorial-actions .button { min-height: 42px; }
+      .editorial-notice { display: none; margin-bottom: 16px; padding: 14px 16px; color: #344054; background: #f2f4f7; font-size: 13px; line-height: 1.45; }
+      .editorial-notice.show { display: block; }
+      .editorial-notice.error { color: #912018; background: #fef3f2; }
+      .editorial-grid { display: grid; gap: 12px; }
+      .editorial-card { display: grid; grid-template-columns: 96px minmax(0, 1fr) 180px; gap: 18px; align-items: start; padding: 20px; border: 1px solid #d8dde3; background: #fff; }
+      .editorial-day { color: #667085; font-size: 12px; font-weight: 800; }
+      .editorial-day strong { display: block; margin-top: 5px; color: var(--studio); font-size: 22px; }
+      .editorial-copy { min-width: 0; }
+      .editorial-topic, .editorial-angle { width: 100%; border: 0; border-bottom: 1px solid transparent; color: var(--studio); background: transparent; font: inherit; outline: none; }
+      .editorial-topic { padding: 0 0 7px; font-size: 17px; font-weight: 900; }
+      .editorial-angle { min-height: 48px; padding: 5px 0; resize: vertical; color: #475467; font-size: 13px; line-height: 1.45; }
+      .editorial-topic:not(:disabled):focus, .editorial-angle:not(:disabled):focus { border-bottom-color: var(--blue); }
+      .editorial-topic:disabled, .editorial-angle:disabled { opacity: 1; -webkit-text-fill-color: currentColor; }
+      .editorial-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+      .editorial-chip { padding: 5px 8px; color: #344054; background: #f2f4f7; font-size: 10px; font-weight: 800; }
+      .editorial-chip.format { color: #075f78; background: #e7f8fc; }
+      .editorial-chip.cta { color: #b54708; background: #fff1e8; }
+      .editorial-card-actions { display: grid; gap: 8px; }
+      .editorial-card-actions .button { width: 100%; min-height: 40px; padding: 9px 12px; font-size: 12px; }
+      .editorial-empty { padding: 70px 24px; text-align: center; border: 1px solid #d8dde3; background: #fff; }
+      .editorial-empty h3 { margin: 0 0 8px; }
+      .editorial-empty p { max-width: 520px; margin: 0 auto 20px; color: #667085; font-size: 13px; line-height: 1.5; }
+      .profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .profile-cell { padding: 18px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .profile-cell:nth-child(2n) { border-right: 0; }
+      .profile-label { color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+      .profile-value { margin-top: 5px; font-weight: 800; }
+      .archive-list .content-row { grid-template-columns: 90px minmax(0, 1fr) 180px; }
+      .archive-list .thumb { width: 90px; height: 112px; }
+      .archive-list .thumb.video { width: 64px; height: 114px; }
+      .studio {
         position: fixed;
         inset: 0;
         z-index: 1000;
         display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 28px;
-        background: rgba(8, 21, 34, .78);
+        grid-template-columns: minmax(0, 1fr) 390px;
+        background: var(--studio);
       }
-      .modal.open { display: flex; }
-      .modal-panel {
-        width: min(1120px, 100%);
-        max-height: calc(100vh - 56px);
-        display: grid;
-        grid-template-columns: minmax(320px, 480px) 1fr;
-        overflow: hidden;
-        border-radius: 8px;
-        background: #fff;
-        box-shadow: 0 30px 90px rgba(0, 0, 0, .36);
+      .studio.open { display: grid; }
+      .studio-stage { position: relative; min-width: 0; display: grid; place-items: center; padding: 28px 74px; overflow: hidden; }
+      .studio-media { max-width: 100%; max-height: calc(100vh - 56px); object-fit: contain; background: #000; box-shadow: 0 24px 70px rgba(0,0,0,.45); }
+      video.studio-media { aspect-ratio: 9 / 16; }
+      img.studio-media { aspect-ratio: 4 / 5; }
+      .close-studio { position: absolute; top: 20px; left: 20px; z-index: 2; width: 42px; height: 42px; border-radius: 50%; color: #fff; background: #202a33; font-size: 23px; cursor: pointer; }
+      .slide-control { position: absolute; top: 50%; width: 42px; height: 42px; border-radius: 50%; color: #fff; background: #202a33; font-size: 20px; cursor: pointer; }
+      .slide-control.prev { left: 20px; }
+      .slide-control.next { right: 20px; }
+      .slide-control:disabled { visibility: hidden; }
+      .slide-count { position: absolute; bottom: 18px; color: #aeb8c2; font-size: 12px; font-weight: 800; }
+      .inspector { min-width: 0; display: flex; flex-direction: column; padding: 26px; background: #fff; overflow: auto; }
+      .inspector-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      .inspector-top .status { position: relative; display: block; min-width: 0; margin: 0; padding-left: 13px; white-space: nowrap; }
+      .inspector-top .status::before { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
+      .inspector h2 { margin: 18px 0 8px; font-size: 21px; line-height: 1.3; }
+      .inspector-caption { white-space: pre-wrap; color: #475467; font-size: 13px; line-height: 1.55; }
+      .review { display: grid; gap: 10px; margin: 22px 0; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .review-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
+      .review-row span { color: var(--muted); }
+      .inspector-actions { margin-top: auto; display: grid; gap: 9px; padding-top: 20px; }
+      .inspector-actions .button { min-height: 48px; width: 100%; }
+      .publish-progress { display: none; margin-top: 20px; }
+      .publish-progress.show { display: block; }
+      .progress-track { height: 5px; background: #eaecf0; overflow: hidden; }
+      .progress-bar { width: 12%; height: 100%; background: var(--orange); transition: width .5s ease; }
+      .progress-text { margin-top: 9px; color: #475467; font-size: 12px; font-weight: 800; }
+      .success { display: none; margin-top: 18px; padding: 16px; color: #05603a; background: #ecfdf3; }
+      .success.show { display: block; }
+      .error-box { display: none; margin-top: 18px; padding: 16px; color: #912018; background: #fef3f2; font-size: 13px; }
+      .error-box.show { display: block; }
+      .mobile-nav { display: none; }
+      @media (max-width: 1100px) {
+        .queue-layout { grid-template-columns: 1fr; }
+        .today-panel { order: -1; }
+        .today-list { grid-template-columns: repeat(4, 1fr); }
+        .today-item { grid-template-columns: 1fr; gap: 2px; }
       }
-      .modal-stage {
-        min-height: 640px;
-        display: grid;
-        place-items: center;
-        padding: 24px;
-        background: #0d1b2a;
-      }
-      .modal-stage img,
-      .modal-stage video {
-        max-width: 100%;
-        max-height: calc(100vh - 120px);
-        border-radius: 8px;
-        background: #000;
-        box-shadow: 0 18px 48px rgba(0, 0, 0, .28);
-      }
-      .modal-stage img { aspect-ratio: 4 / 5; object-fit: contain; }
-      .modal-stage video { aspect-ratio: 9 / 16; object-fit: contain; }
-      .modal-info {
-        padding: 24px;
-        overflow: auto;
-      }
-      .modal-info h3 {
-        margin: 0 0 8px;
-        font-size: 22px;
-      }
-      .modal-info p {
-        color: var(--muted);
-        line-height: 1.45;
-      }
-      .modal-close {
-        position: absolute;
-        top: 18px;
-        right: 18px;
-        width: 42px;
-        height: 42px;
-        border: 0;
-        border-radius: 8px;
-        background: #fff;
-        color: var(--ink);
-        font-size: 22px;
-        font-weight: 800;
-        cursor: pointer;
-      }
-      .url-list {
-        display: grid;
-        gap: 8px;
-        margin-top: 16px;
-      }
-      .url-list a {
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: #075f78;
-        font-size: 12px;
-      }
-      .slide-nav {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 14px;
-      }
-      .slide-nav button {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 8px 12px;
-        background: #fff;
-        color: var(--ink);
-        cursor: pointer;
-        font-weight: 800;
-      }
-      .slide-nav button:disabled { opacity: .45; cursor: default; }
-      .slide-counter {
-        min-width: 62px;
-        color: #d8eef5;
-        text-align: center;
-        font-size: 13px;
-        font-weight: 800;
-      }
-      .customer-layout {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-      .customer-list {
-        display: grid;
-        gap: 12px;
-      }
-      .customer-card {
-        border: 1px solid #eef6f9;
-        border-radius: 8px;
-        padding: 14px;
-        background: #f8fcfe;
-      }
-      .customer-card h3 {
-        margin: 0 0 7px;
-        font-size: 17px;
-      }
-      .customer-meta {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 7px 12px;
-        margin-top: 10px;
-      }
-      .onboarding-panel {
-        display: grid;
-        gap: 12px;
-      }
-      .checklist {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 9px 12px;
-        margin-top: 12px;
-      }
-      .check-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--muted);
-        font-size: 13px;
-        font-weight: 700;
-      }
-      .check-dot {
-        width: 9px;
-        height: 9px;
-        border-radius: 999px;
-        background: var(--red);
-        flex: 0 0 auto;
-      }
-      .check-dot.ok { background: var(--green); }
-      @media (max-width: 1500px) {
-        .content-grid { grid-template-columns: 1fr; }
-      }
-      @media (max-width: 980px) {
-        .layout { grid-template-columns: 1fr; }
-        aside { position: relative; height: auto; }
-        .stats, .content-grid, .customer-layout, .today-grid, .schedule-legend { grid-template-columns: 1fr; }
-        header { flex-direction: column; }
-        .toolbar { justify-content: flex-start; }
-        .modal-panel { grid-template-columns: 1fr; }
-        .modal-stage { min-height: auto; }
-      }
-      @media (max-width: 720px) {
-        main { padding: 20px 14px 36px; }
-        aside { padding: 20px 14px; }
-        h1 { font-size: 28px; }
-        header, .title-row, .toolbar { width: 100%; min-width: 0; }
-        .title-row { align-items: flex-start; }
-        .title-row > div { min-width: 0; }
-        h1, .subtitle { overflow-wrap: anywhere; }
-        .header-logo { width: 50px; height: 50px; }
-        .toolbar .btn { flex: 1 1 140px; justify-content: center; text-align: center; white-space: normal; }
-        .card { padding: 14px; }
-        .queue-head { align-items: flex-start; flex-direction: column; }
-        .queue-group > div[style] { overflow: visible !important; }
-        .queue-group table,
-        .queue-group tbody,
-        .queue-group tr,
-        .queue-group td { display: block; width: 100%; }
-        .queue-group thead { display: none; }
-        .queue-group tr { padding: 14px; border-bottom: 1px solid #eef6f9; }
-        .queue-group tr:last-child { border-bottom: 0; }
-        .queue-group td { padding: 5px 0; border: 0; }
-        .queue-group td:first-child { float: left; width: 82px; margin-right: 12px; }
-        .queue-group td:nth-child(2),
-        .queue-group td:nth-child(3) { margin-left: 94px; width: calc(100% - 94px); }
-        .queue-group td:nth-child(4) { clear: both; padding-top: 12px; }
-        .queue-group .preview { width: 82px; }
-        .queue-group .actions { margin-top: 4px; }
-        .queue-group .actions .btn { justify-content: center; flex: 1 1 130px; }
-        .plan-row { grid-template-columns: 88px minmax(120px, 1fr); }
+      @media (max-width: 760px) {
+        body { padding-bottom: calc(68px + env(safe-area-inset-bottom)); background: #fff; }
+        .app { display: block; }
+        .sidebar { position: static; height: 64px; padding: 10px 14px; }
+        .brand { height: 44px; padding: 0; border: 0; }
+        .brand-logo { width: 40px; height: 40px; }
+        .nav, .sidebar-foot { display: none; }
+        .main { padding: 0 0 24px; }
+        .topbar { min-height: 70px; padding: 0 14px; }
+        .topbar h1 { font-size: 20px; }
+        .topbar p { display: none; }
+        .top-actions .button { display: none; }
+        .view { padding-top: 18px; }
+        .view-head { padding: 0 14px; margin-bottom: 14px; align-items: center; }
+        .view-head h2 { font-size: 18px; }
+        .view-head p { display: none; }
+        .queue-layout { gap: 0; }
+        .queue { border-left: 0; border-right: 0; }
+        .queue-toolbar { overflow-x: auto; scrollbar-width: none; }
+        .filter { white-space: nowrap; }
+        .today-panel { margin: 0 14px 14px; padding: 15px; }
+        .today-list { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .today-item { padding-right: 7px; border-right: 1px solid #2a3742; }
+        .today-item:last-child { border-right: 0; }
+        .today-item strong { font-size: 11px; }
+        .today-state { font-size: 10px; }
+        .content-row { grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 14px; align-items: start; }
+        .thumb { width: 92px; height: 115px; }
+        .thumb.video { width: 74px; height: 132px; justify-self: center; }
+        .content-copy h3 { margin-top: 6px; font-size: 14px; }
+        .caption { -webkit-line-clamp: 2; font-size: 12px; }
+        .content-row { overflow: hidden; }
+        .row-action { grid-column: 1 / -1; width: 100%; max-width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); }
+        .row-action .button { width: 100%; min-width: 0; max-width: 100%; padding: 10px 8px; font-size: 12px; line-height: 1.2; white-space: normal; overflow-wrap: anywhere; }
+        .archive-list .content-row { grid-template-columns: 74px minmax(0, 1fr); }
+        .archive-list .row-action { display: block; }
+        .archive-list .thumb { width: 74px; height: 93px; }
+        .archive-list .thumb.video { width: 58px; height: 103px; }
+        .plan-shell, .profile-shell { border-left: 0; border-right: 0; }
+        .plan-row { grid-template-columns: 86px minmax(0, 1fr); padding: 13px 14px; }
         .plan-row > :nth-child(n+3) { display: none; }
+        .editorial-toolbar { margin: 0 14px 14px; padding: 15px; align-items: flex-start; }
+        .editorial-toolbar strong { font-size: 15px; }
+        .editorial-actions { flex-direction: column; align-items: stretch; }
+        .editorial-actions .button { min-height: 38px; padding: 8px 11px; font-size: 11px; }
+        .editorial-notice { margin: 0 14px 14px; }
+        .editorial-grid { gap: 10px; padding: 0 14px; }
+        .editorial-card { grid-template-columns: 62px minmax(0, 1fr); gap: 12px; padding: 15px; }
+        .editorial-day strong { font-size: 17px; }
+        .editorial-topic { font-size: 15px; }
+        .editorial-card-actions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
+        .editorial-empty { margin: 0 14px; padding: 48px 20px; }
+        .profile-grid { grid-template-columns: 1fr; }
+        .profile-cell { border-right: 0; }
+        .studio { width: 100vw; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; }
+        .studio-stage { min-height: 0; padding: 12px 48px; }
+        .studio-media { max-height: calc(100vh - 285px); }
+        .close-studio { top: 12px; left: 12px; width: 38px; height: 38px; }
+        .slide-control { width: 36px; height: 36px; }
+        .slide-control.prev { left: 8px; }
+        .slide-control.next { right: 8px; }
+        .inspector { width: 100%; max-width: 100vw; max-height: 285px; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 12px 12px 0 0; overflow-x: hidden; }
+        .inspector h2 { margin: 10px 0 5px; font-size: 16px; }
+        .inspector-caption { max-height: 44px; overflow: hidden; font-size: 12px; }
+        .review { grid-template-columns: 1fr 1fr; margin: 11px 0; padding: 10px 0; }
+        .review-row { display: block; font-size: 11px; }
+        .review-row strong { display: block; margin-top: 2px; }
+        .inspector-actions { padding-top: 7px; }
+        .inspector-actions .button { min-height: 46px; }
+        .mobile-nav {
+          position: fixed;
+          z-index: 900;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+          border-top: 1px solid #d0d5dd;
+          background: #fff;
+          box-shadow: 0 -8px 24px rgba(16,24,40,.08);
+        }
+        .mobile-nav .nav-button { display: grid; justify-items: center; gap: 2px; padding: 4px 2px; border-radius: 5px; color: #667085; background: transparent; font-size: 10px; text-align: center; }
+        .mobile-nav .nav-button.active { color: #075f78; background: #e9f8fc; box-shadow: none; }
+        .mobile-nav .nav-icon { width: 18px; height: 18px; }
       }
     </style>
   </head>
   <body>
-    <div class="layout">
-      <aside>
+    <div class="app">
+      <aside class="sidebar">
         <div class="brand">
-          <div class="mark"><img src="/hasi-logo.png" alt="Hasi Elektronic"></div>
-          <div>
-            <strong>Hasi Elektronic</strong>
-            <span>Hasi Social Media</span>
-          </div>
+          <img class="brand-logo" src="/hasi-logo.png" alt="Hasi Elektronic">
+          <div><span class="brand-name" id="brandName">Hasi Elektronic</span><span class="brand-product">Social Media Studio</span></div>
         </div>
-        <nav>
-          <a class="active" href="#dashboard">Dashboard</a>
-          <a href="#customer">Kundenprofil</a>
-          <a href="#queue">Beiträge</a>
-          <a href="#plan">14 Tage Plan</a>
-          <a href="#automations">Automationen</a>
-          <a href="#logs">Logs</a>
-          <a class="logout-link" href="/logout">Abmelden</a>
-        </nav>
+        <nav class="nav" aria-label="Hauptnavigation" id="desktopNav"></nav>
+        <div class="sidebar-foot">
+          <div class="account"><strong id="accountName">Hasi Elektronic</strong><span id="accountHandle">@hasi_elektronic</span></div>
+          <a class="logout" href="/logout">Abmelden</a>
+        </div>
       </aside>
-      <main>
-        <header>
-          <div class="title-row">
-            <img class="header-logo" src="/hasi-logo.png" alt="Hasi Elektronic Logo">
-            <div>
-              <h1 id="pageTitle">Hasi Social Media</h1>
-              <p class="subtitle" id="pageSubtitle">Beiträge, Storys und Reels planen, prüfen und freigeben.</p>
-            </div>
-          </div>
-          <div class="toolbar">
-            <button class="btn secondary" id="refreshBtn">Status aktualisieren</button>
-            <a class="btn orange" id="instagramLink" href="https://www.instagram.com/hasi_elektronic/" target="_blank">Instagram öffnen</a>
-            <a class="btn secondary" href="/logout">Abmelden</a>
+      <main class="main">
+        <header class="topbar">
+          <div><h1 id="pageTitle">Freigaben</h1><p id="pageSubtitle">Prüfe neue Inhalte und veröffentliche sie direkt.</p></div>
+          <div class="top-actions">
+            <button class="icon-button" id="refreshBtn" type="button" aria-label="Status aktualisieren" title="Status aktualisieren">
+              <svg viewBox="0 0 24 24"><path d="M20 6v5h-5"/><path d="M19 11a7 7 0 1 0 1 5"/></svg>
+            </button>
+            <a class="button" id="instagramLink" target="_blank" rel="noreferrer">Instagram öffnen</a>
           </div>
         </header>
 
-        <section id="dashboard" class="grid stats">
-          <div class="card">
-            <div class="stat-label">Instagram API</div>
-            <div id="apiStatus" class="stat-value">...</div>
-          </div>
-          <div class="card">
-            <div class="stat-label">Heute erledigt</div>
-            <div id="todayCount" class="stat-value">...</div>
-          </div>
-          <div class="card">
-            <div class="stat-label">Publish-ready Inhalte</div>
-            <div id="readyCount" class="stat-value">...</div>
-          </div>
-          <div class="card">
-            <div class="stat-label">Kunde</div>
-            <div id="activeCustomer" class="stat-value" style="font-size:18px">...</div>
-          </div>
-        </section>
-
-        <section class="section content-grid grid">
-          <div class="card" id="queue">
-            <h2>Beiträge und Freigaben</h2>
-            <div id="todaySummary"></div>
-            <div class="notice" style="margin-bottom:12px">Zuerst Vorschau und Text prüfen, dann freigeben. Erst danach wird die Veröffentlichung freigeschaltet. Storys bleiben 24 Stunden sichtbar.</div>
-            <div class="queue-groups" id="manifestGroups"></div>
-          </div>
-
-          <div class="card" id="plan">
-            <h2>14 Tage Plan</h2>
-            <div class="schedule-legend">
-              <div class="schedule-item"><strong>08:00</strong><span>Karussell / Tagespost</span></div>
-              <div class="schedule-item"><strong>08:30</strong><span>Reel</span></div>
-              <div class="schedule-item"><strong>09:00</strong><span>Story Vorbereitung</span></div>
+        <section class="view active" id="view-approvals">
+          <div class="view-head"><div><h2>Zur Freigabe</h2><p>Alles, was deine Entscheidung benötigt.</p></div><span class="count" id="pendingCount">0 offen</span></div>
+          <div class="queue-layout">
+            <div class="queue">
+              <div class="queue-toolbar">
+                <div class="filters">
+                  <button class="filter active" type="button" data-filter="all">Alle</button>
+                  <button class="filter" type="button" data-filter="reel">Reels</button>
+                  <button class="filter" type="button" data-filter="carousel">Karussells</button>
+                  <button class="filter" type="button" data-filter="story">Storys</button>
+                </div>
+              </div>
+              <div class="content-list" id="approvalList"></div>
             </div>
-            <div id="planRows"></div>
+            <aside class="today-panel"><h3>Heutige Produktion</h3><div class="today-date" id="todayDate"></div><div class="today-progress" id="todayProgress"></div><div class="today-list" id="todayList"></div></aside>
           </div>
         </section>
 
-        <section class="section card" id="customer">
-          <h2>Kundenprofil</h2>
-          <div class="customer-layout">
-            <div>
-              <div class="notice" style="margin-bottom:12px">Diese Ansicht zeigt den aktuellen Kunden und die vorbereiteten Inhalte.</div>
-              <div class="customer-list" id="customerList"></div>
-            </div>
-          </div>
+        <section class="view" id="view-plan">
+          <div class="view-head"><div><h2>Wochenplanung</h2><p>Themen, Blickwinkel und Formate gemeinsam festlegen.</p></div><span class="count" id="weekCount">7 Tage</span></div>
+          <div class="editorial-toolbar" id="editorialToolbar"></div>
+          <div class="editorial-notice" id="editorialNotice"></div>
+          <div class="editorial-grid" id="editorialGrid"></div>
         </section>
 
-        <section class="section content-grid grid">
-          <div class="card" id="automations">
-            <h2>Automationen</h2>
-            <table>
-              <thead><tr><th>Name</th><th>Status</th><th>Zeitplan</th></tr></thead>
-              <tbody id="automationRows"></tbody>
-            </table>
-          </div>
-          <div class="card" id="logs">
-            <h2>Logs</h2>
-            <pre id="logBox">...</pre>
-          </div>
+        <section class="view" id="view-archive">
+          <div class="view-head"><div><h2>Archiv</h2><p>Veröffentlichte Inhalte, neueste zuerst.</p></div><span class="count" id="archiveCount">0 veröffentlicht</span></div>
+          <div class="queue archive-list" id="archiveList"></div>
+        </section>
+
+        <section class="view" id="view-profile">
+          <div class="view-head"><div><h2>Profil</h2><p>Marke, Kontakt und Veröffentlichungsstatus.</p></div></div>
+          <div class="profile-shell"><div class="profile-grid" id="profileGrid"></div></div>
         </section>
       </main>
     </div>
-    <div class="modal" id="previewModal" aria-hidden="true">
-      <button class="modal-close" id="modalClose" type="button" aria-label="Preview schließen">×</button>
-      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <div class="modal-stage" id="modalStage"></div>
-        <div class="modal-info">
-          <span class="pill" id="modalType">Preview</span>
-          <h3 id="modalTitle">Preview</h3>
-          <p id="modalCaption"></p>
-          <div id="modalStatus"></div>
-          <div class="url-list" id="modalUrls"></div>
-        </div>
+    <nav class="mobile-nav" aria-label="Mobile Navigation" id="mobileNav"></nav>
+
+    <div class="studio" id="studio" aria-hidden="true">
+      <div class="studio-stage" id="studioStage">
+        <button class="close-studio" id="closeStudio" type="button" aria-label="Vorschau schließen">×</button>
+        <button class="slide-control prev" id="prevSlide" type="button" aria-label="Vorheriges Bild">‹</button>
+        <div id="studioMedia"></div>
+        <button class="slide-control next" id="nextSlide" type="button" aria-label="Nächstes Bild">›</button>
+        <div class="slide-count" id="slideCount"></div>
       </div>
+      <aside class="inspector">
+        <div class="inspector-top"><span class="type" id="studioType"></span><span class="status" id="studioStatus"></span></div>
+        <h2 id="studioTitle"></h2>
+        <div class="inspector-caption" id="studioCaption"></div>
+        <div class="review">
+          <div class="review-row"><span>Format</span><strong id="studioFormat"></strong></div>
+          <div class="review-row"><span>Stand</span><strong id="studioDate"></strong></div>
+        </div>
+        <div class="publish-progress" id="publishProgress"><div class="progress-track"><div class="progress-bar" id="progressBar"></div></div><div class="progress-text" id="progressText"></div></div>
+        <div class="success" id="successBox"></div>
+        <div class="error-box" id="errorBox"></div>
+        <div class="inspector-actions" id="studioActions"></div>
+      </aside>
     </div>
 
     <script>
-      const CUSTOMER_ROUTE_ALIASES = {
-        "/hasi-elektronic": "hasi-elektronic",
-        "/kebyshop": "keby-shop",
+      const ICONS = {
+        approvals: '<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h5"/><path d="m14 16 1.5 1.5L19 14"/></svg>',
+        plan: '<svg viewBox="0 0 24 24"><path d="M5 3v3M19 3v3M4 8h16v12H4z"/><path d="M8 12h3M8 16h7"/></svg>',
+        archive: '<svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM3 4h18v3H3z"/><path d="M9 11h6"/></svg>',
+        profile: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
       };
-
-      function requestedCustomerFromUrl() {
-        if (CUSTOMER_ROUTE_ALIASES[window.location.pathname]) {
-          return CUSTOMER_ROUTE_ALIASES[window.location.pathname];
-        }
-        const match = window.location.pathname.match(/^\/kunde\/([^/?#]+)/);
-        if (match) return decodeURIComponent(match[1]);
-        return new URLSearchParams(window.location.search).get("customer") || "hasi-elektronic";
-      }
-
-      const requestedCustomerId = requestedCustomerFromUrl();
-      const state = { busy: false, data: null, activeCustomer: null, previewItem: null, previewIndex: 0 };
+      const NAV = [
+        ["approvals", "Freigaben"],
+        ["plan", "Plan"],
+        ["archive", "Archiv"],
+        ["profile", "Profil"],
+      ];
+      const CUSTOMER_ALIASES = { "/hasi-elektronic": "hasi-elektronic", "/kebyshop": "keby-shop" };
+      const RELIABLE_TRACKING_START = new Date("2026-07-09T00:00:00+02:00").getTime();
+      const state = { data: null, customer: null, view: "approvals", filter: "all", item: null, slide: 0, busy: false, editorialBusy: false };
       const $ = (id) => document.getElementById(id);
 
+      function customerId() {
+        if (CUSTOMER_ALIASES[location.pathname]) return CUSTOMER_ALIASES[location.pathname];
+        const match = location.pathname.match(/^\/kunde\/([^/?#]+)/);
+        return match ? decodeURIComponent(match[1]) : "hasi-elektronic";
+      }
+      function esc(value) {
+        return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+      }
+      function typeLabel(type) { return ({ reel: "Reel", carousel: "Karussell", story: "Story" })[type] || type; }
+      function localDateKey(date = new Date()) {
+        const d = date instanceof Date ? date : new Date(date);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+      function dateKey(item) { return String(item.slug || item.file).match(/\d{4}-\d{2}-\d{2}/)?.[0] || localDateKey(item.sortAt || item.updatedAt); }
+      function date(value, withTime = false) {
+        if (!value) return "–";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) {
+          const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+          return m ? `${m[3]}.${m[2]}.${m[1]}` : String(value);
+        }
+        return new Intl.DateTimeFormat("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}) }).format(d);
+      }
+      function title(item) {
+        if (item.title) return item.title;
+        return String(item.slug || item.file || "Inhalt").replace(/-\d{4}-\d{2}-\d{2}$/, "").replace(/\.(reel|story)?\.?manifest\.json$/, "").replaceAll("-", " ").replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+      }
       async function api(path, options) {
         const response = await fetch(path, options);
-        const data = await response.json();
-        if (!response.ok || data.ok === false) throw new Error(data.error || "API Fehler");
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
         return data;
       }
-
-      function setBusy(busy) {
-        state.busy = busy;
-        $("refreshBtn").disabled = busy;
+      function navMarkup(id, label) { return `<button class="nav-button ${state.view === id ? "active" : ""}" type="button" data-view="${id}"><span class="nav-icon">${ICONS[id]}</span><span>${label}</span></button>`; }
+      function renderNav() {
+        const html = NAV.map(([id, label]) => navMarkup(id, label)).join("");
+        $("desktopNav").innerHTML = html;
+        $("mobileNav").innerHTML = html;
       }
-
-      function preview(item) {
-        if (!item.preview) return "";
-        if (item.type === "carousel") {
-          return `<img class="preview js-preview" src="${item.preview}" alt="${item.slug}" data-file="${item.file}">`;
-        }
-        return `<video class="preview js-preview" src="${item.preview}" muted playsinline data-file="${item.file}"></video>`;
+      function showView(view) {
+        state.view = view;
+        document.querySelectorAll(".view").forEach((node) => node.classList.toggle("active", node.id === `view-${view}`));
+        document.querySelectorAll("[data-view]").forEach((node) => node.classList.toggle("active", node.dataset.view === view));
+        const labels = { approvals: ["Freigaben", "Prüfe neue Inhalte und veröffentliche sie direkt."], plan: ["Wochenplanung", "Themen gemeinsam prüfen und die nächste Woche freigeben."], archive: ["Archiv", "Alle veröffentlichten Inhalte."], profile: ["Profil", "Marke und Kontoeinstellungen."] };
+        $("pageTitle").textContent = labels[view][0];
+        $("pageSubtitle").textContent = labels[view][1];
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
-
-      function typeLabel(type) {
-        return {
-          carousel: "Karussell",
-          story: "Story",
-          reel: "Reel",
-        }[type] || type;
-      }
-
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
-      }
-
-      function formatGermanDate(value) {
-        if (!value) return "";
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) {
-          const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
-          return match ? `${match[3]}.${match[2]}.${match[1]}` : String(value);
-        }
-        return new Intl.DateTimeFormat("de-DE", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }).format(date);
-      }
-
-      function formatGermanDateTime(value) {
-        if (!value) return "";
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return formatGermanDate(value);
-        return new Intl.DateTimeFormat("de-DE", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }).format(date);
-      }
-
-      function localDateKey(value = new Date()) {
-        const date = value instanceof Date ? value : new Date(value);
-        if (Number.isNaN(date.getTime())) return "";
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
-      }
-
-      function manifestDateKey(item) {
-        const slugDate = String(item.slug || item.file || "").match(/(\d{4}-\d{2}-\d{2})/);
-        return slugDate?.[1] || localDateKey(item.sortAt || item.updatedAt || item.publishedAt);
-      }
-
-      function formatSlugOrFile(value) {
-        return String(value || "").replace(/(\d{4})-(\d{2})-(\d{2})/g, "$3.$2.$1");
-      }
-
-      function displayManifestName(item) {
-        return formatSlugOrFile(item.file || item.slug || "");
-      }
-
-      function newestFirst(items) {
-        return [...items].sort((a, b) => {
-          const aTime = new Date(a.sortAt || a.updatedAt || a.publishedAt || 0).getTime() || 0;
-          const bTime = new Date(b.sortAt || b.updatedAt || b.publishedAt || 0).getTime() || 0;
-          return bTime - aTime;
-        });
-      }
-
-      function statusPill(item) {
-        if (item.published) {
-          return `<span class="pill green">veröffentlicht</span><div class="small">ID: ${item.instagramId || "unbekannt"}<br>${formatGermanDateTime(item.publishedAt)}</div>`;
-        }
-        if (item.approved) {
-          return `<span class="pill green">freigegeben</span><div class="small">${formatGermanDateTime(item.approvedAt) || "Bereit zur Veröffentlichung"}</div>`;
-        }
-        if (item.ready) {
-          return `<span class="pill orange">Freigabe offen</span><div class="small">${item.checks.map((c) => `${c.status} ${c.type}`).join("<br>")}</div>`;
-        }
-        return `<span class="pill red">prüfen</span><div class="small">${item.checks.map((c) => `${c.status} ${c.type}`).join("<br>")}</div>`;
-      }
-
-      function shortStatus(item) {
-        if (!item) return { cls: "red", label: "fehlt", detail: "Heute noch nicht erstellt." };
-        if (item.published) return { cls: "green", label: "veröffentlicht", detail: formatGermanDateTime(item.publishedAt) || formatGermanDateTime(item.updatedAt) };
-        if (item.approved) return { cls: "green", label: "freigegeben", detail: `${formatGermanDateTime(item.approvedAt)} · Bereit zur Veröffentlichung` };
-        if (item.ready) return { cls: "orange", label: "bereit", detail: `Noch nicht veröffentlicht · ${formatGermanDateTime(item.updatedAt)}` };
-        return { cls: "red", label: "prüfen", detail: `Fehler oder unvollständig · ${formatGermanDateTime(item.updatedAt)}` };
-      }
-
-      function renderTodaySummary(items) {
-        const today = localDateKey();
-        const definitions = [
-          ["carousel", "08:00", "Karussell"],
-          ["reel", "08:30", "Reel"],
-          ["story", "09:00", "Story"],
-        ];
-        const completed = definitions.filter(([type]) => items.some((item) => item.type === type && manifestDateKey(item) === today && (item.ready || item.published))).length;
-        const rows = definitions.map(([type, time, label]) => {
-          const item = newestFirst(items).find((entry) => entry.type === type && manifestDateKey(entry) === today);
-          const status = shortStatus(item);
-          return `
-            <div class="today-item">
-              <span class="pill ${status.cls}">${status.label}</span>
-              <strong>${time} ${label}</strong>
-              <div class="small">${item ? escapeHtml(displayManifestName(item)) : "Kein heutiger Inhalt gefunden."}</div>
-              <div class="small">${escapeHtml(status.detail)}</div>
-            </div>
-          `;
-        }).join("");
-        return `
-          <div class="today-panel">
-            <div class="today-head">
-              <strong>Heute (${formatGermanDate(today)})</strong>
-              <span class="pill ${completed === 3 ? "green" : "red"}">${completed}/3 erledigt</span>
-            </div>
-            <div class="today-grid">${rows}</div>
-          </div>
-        `;
-      }
-
-      function todayCompletedCount(items) {
-        const today = localDateKey();
-        return ["carousel", "reel", "story"].filter((type) => items.some((item) => item.type === type && manifestDateKey(item) === today && (item.ready || item.published))).length;
-      }
-
-      function automationScheduleLabel(item) {
-        if (!item.schedule) return "-";
-        if (!item.schedule.includes("RRULE")) return escapeHtml(item.schedule);
-        const hour = item.schedule.match(/BYHOUR=(\d{1,2})/)?.[1]?.padStart(2, "0");
-        const minute = item.schedule.match(/BYMINUTE=(\d{1,2})/)?.[1]?.padStart(2, "0") || "00";
-        const time = hour ? `${hour}:${minute}` : "Zeit offen";
-        const name = `${item.name || ""} ${item.id || ""}`.toLowerCase();
-        let job = "Automation";
-        if (name.includes("tagesproduktion")) job = "Gesamtproduktion";
-        if (name.includes("wochenpost") || name.includes("tagespost")) job = "Karussell / Tagespost";
-        if (name.includes("reel")) job = "Reel";
-        if (name.includes("story")) job = "Story Vorbereitung";
-        if (name.includes("tageskontrolle")) job = "Kontrolle / Nachholen";
-        return `${time} ${job}`;
-      }
-
-      function publishButton(item) {
-        if (item.published) {
-          return `
-            <button class="btn secondary js-preview-btn" type="button" data-file="${item.file}">Ansehen</button>
-            <span class="pill gray">gesperrt</span>
-            <div class="small">Schon veröffentlicht</div>
-          `;
-        }
-        const approvalAction = item.approved
-          ? `<span class="pill green">Freigegeben</span>`
-          : `<button class="btn js-approve-btn" ${item.ready ? "" : "disabled"} data-type="${item.type}" data-file="${item.file}">Freigeben</button>`;
-        const publishAction = item.approved
-          ? `<button class="btn orange js-publish-btn" data-type="${item.type}" data-file="${item.file}">Veröffentlichen</button>`
-          : `<div class="small">Veröffentlichung erst nach Freigabe</div>`;
-        return `
-          <button class="btn secondary js-preview-btn" type="button" data-file="${item.file}">Ansehen</button>
-          ${approvalAction}
-          ${publishAction}
-        `;
-      }
-
-      function renderLogs(logs) {
-        if (!logs.length) return "Noch keine Logs.";
-        return logs.map((entry) => [
-          `${formatGermanDateTime(entry.time)}  ${entry.action || "log"}`,
-          `Status: ${entry.status || (entry.ok ? "ok" : "-")}`,
-          entry.type ? `Typ: ${typeLabel(entry.type)}` : "",
-          entry.topic ? `Thema: ${entry.topic}` : "",
-          entry.slug ? `Slug: ${formatSlugOrFile(entry.slug)}` : "",
-          entry.instagramId ? `Instagram ID: ${entry.instagramId}` : "",
-          entry.note ? `Notiz: ${entry.note}` : "",
-        ].filter(Boolean).join("\n")).join("\n\n");
-      }
-
-      function renderGroup(type, items) {
-        const sortedItems = newestFirst(items);
-        const published = items.filter((item) => item.published).length;
-        const ready = items.filter((item) => item.ready && !item.published).length;
-        const rows = sortedItems.map((item) => `
-          <tr>
-            <td>${preview(item)}</td>
-            <td><span class="pill">${typeLabel(item.type)}</span><div class="small">${item.urlCount} URL</div></td>
-            <td><strong>${displayManifestName(item)}</strong><div class="small">Aktualisiert: ${formatGermanDateTime(item.updatedAt || item.sortAt)}</div><div class="small">${item.caption ? item.caption.slice(0, 90) + "..." : item.preview}</div></td>
-            <td>${statusPill(item)}</td>
-            <td><div class="actions">${publishButton(item)}</div></td>
-          </tr>
-        `).join("");
-
-        return `
-          <div class="queue-group">
-            <div class="queue-head">
-              <h3>${typeLabel(type)}</h3>
-              <div class="queue-counts">
-                <span class="pill green">${published} veröffentlicht</span>
-                <span class="pill orange">${ready} bereit</span>
-                <span class="pill gray">${items.length} gesamt</span>
-              </div>
-            </div>
-            <div style="overflow:auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Preview</th>
-                    <th>Typ</th>
-                    <th>Manifest</th>
-                    <th>Status</th>
-                    <th>Aktion</th>
-                  </tr>
-                </thead>
-                <tbody>${rows || `<tr><td colspan="5" class="small">Keine Einträge</td></tr>`}</tbody>
-              </table>
-            </div>
-          </div>
-        `;
-      }
-
-      function onboardingStatus(customer) {
-        const ob = customer?.onboarding || {};
-        const mediaOk = Boolean(ob.productPhotos && ob.productList && ob.instagramBusiness && ob.facebookPage && ob.metaAccess && ob.publishPermission !== "missing");
-        if (!ob.profileComplete) return { label: "Profil eksik", cls: "red" };
-        if (!ob.brandComplete) return { label: "Marka bilgileri eksik", cls: "orange" };
-        if (!mediaOk) return { label: "Medya erişimi eksik", cls: "orange" };
-        if (!ob.contentPlan) return { label: "İçerik planı eksik", cls: "orange" };
-        return { label: "Yayına hazır", cls: "green" };
-      }
-
-      function customerReady(customer) {
-        return onboardingStatus(customer).label === "Yayına hazır";
-      }
-
-      function onboardingChecklist(customer) {
-        const ob = customer?.onboarding || {};
-        return [
-          ["Profil", ob.profileComplete],
-          ["Logo / Marke", ob.brandComplete],
-          ["Produktfotos", ob.productPhotos],
-          ["Produktliste / Preise", ob.productList],
-          ["Instagram Business", ob.instagramBusiness],
-          ["Facebook Page", ob.facebookPage],
-          ["Meta Zugriff", ob.metaAccess],
-          ["Content Plan", ob.contentPlan],
-        ].map(([label, ok]) => `
-          <div class="check-item"><span class="check-dot ${ok ? "ok" : ""}"></span>${label}</div>
-        `).join("");
-      }
-
-      function renderOnboardingPanel(customer) {
-        const status = onboardingStatus(customer);
-        return `
-          <div class="onboarding-panel">
-            <div class="notice">Dieser Kunde ist noch nicht bereit für automatische Beitragsplanung. Erst die offenen Onboarding-Punkte abschließen, dann können Freigabe und Publishing aktiviert werden.</div>
-            <div class="customer-card">
-              <h3>Onboarding Status</h3>
-              <span class="pill ${status.cls}">${status.label}</span>
-              <div class="checklist">${onboardingChecklist(customer)}</div>
-              <p class="small" style="margin:12px 0 0"><strong>Yayın onayı:</strong> ${escapeHtml(customer.onboarding?.publishPermission || "missing")}</p>
-              ${customer.onboarding?.notes ? `<p class="small" style="margin:8px 0 0"><strong>Notiz:</strong> ${escapeHtml(customer.onboarding.notes)}</p>` : ""}
-            </div>
-          </div>
-        `;
-      }
-
-      function customerPlan(customer) {
-        const topics = customer?.topics?.length ? customer.topics : ["Content Thema"];
-        const cadence = customer?.cadence || {};
-        const now = new Date();
-        return Array.from({ length: 14 }).map((_, index) => {
-          const date = new Date(now);
-          date.setDate(now.getDate() + index);
+      function readyCustomer() { return Boolean(state.customer?.onboarding?.contentPlan); }
+      function sorted(items) { return [...items].sort((a, b) => new Date(b.sortAt || b.updatedAt || 0) - new Date(a.sortAt || a.updatedAt || 0)); }
+      function cloudItems() {
+        const factory = state.data?.cloudFactory;
+        if (!factory?.assets?.length) return [];
+        const jobs = new Map((factory.jobs || []).map((job) => [job.id, job]));
+        return factory.assets.map((asset) => {
+          const job = jobs.get(asset.job_id) || {};
+          let brief = {};
+          try { brief = JSON.parse(job.brief_json || "{}"); } catch {}
+          const section = asset.slot === "carousel" ? brief.carousel : asset.slot === "reel" ? brief.reel : asset.slot === "storyEvening" ? brief.storyEvening : brief.storyMorning;
+          const urls = Array.isArray(asset.urls) ? asset.urls : [];
           return {
-            date: date.toISOString().slice(0, 10),
-            topic: topics[index % topics.length],
-            carousel: cadence.carousel || "08:00",
-            reel: cadence.reel || "08:30",
-            story: cadence.story || "09:00",
+            file: `cloud-${asset.id}`,
+            slug: `${asset.slot}-${job.content_date || String(asset.scheduled_at || "").slice(0, 10)}`,
+            type: asset.slot === "carousel" ? "carousel" : asset.slot === "reel" ? "reel" : "story",
+            title: section?.title || section?.headline || job.topic || "Geplanter Inhalt",
+            caption: section?.caption || section?.body || "Automatisch im Content Factory erstellt.",
+            urls,
+            preview: urls[0] || "",
+            ready: asset.status === "ready",
+            published: asset.status === "published",
+            publishedAt: asset.status === "published" ? asset.updated_at : "",
+            updatedAt: asset.updated_at || asset.scheduled_at,
+            sortAt: asset.scheduled_at,
+            status: asset.status,
+            cloudManaged: true,
+            shadowMode: Boolean(factory.shadowMode),
+            assetId: asset.id,
+            approvalStatus: asset.approval_status || "not_required",
+            publishMode: factory.tenant?.publishMode || "disabled",
+            instagramConnected: Boolean(factory.tenant?.instagramConnected),
           };
         });
       }
-
-      function renderCustomers(customers = []) {
-        const customer =
-          customers.find((item) => item.id === requestedCustomerId) ||
-          customers.find((item) => item.id === "hasi-elektronic") ||
-          customers[0];
-        state.activeCustomer = customer || null;
-        $("activeCustomer").textContent = customer?.company || "Kein Kunde";
-        $("pageTitle").textContent = customer ? `${customer.company || customer.name} Social Media` : "Hasi Social Media";
-        $("pageSubtitle").textContent = customer?.positioning || "Beiträge, Storys und Reels planen, prüfen und freigeben.";
-        if (customer?.instagram) {
-          const handle = customer.instagram.replace(/^@/, "");
-          $("instagramLink").href = `https://www.instagram.com/${encodeURIComponent(handle)}/`;
-          $("instagramLink").style.display = "";
-        } else {
-          $("instagramLink").style.display = "none";
+      function allManifests() { return [...(state.data?.manifests || []), ...cloudItems()]; }
+      function isLegacy(item) { return !item.published && new Date(item.updatedAt || item.sortAt || 0).getTime() < RELIABLE_TRACKING_START; }
+      function thumb(item) {
+        const media = item.type === "carousel"
+          ? `<img src="${item.preview}" alt="${esc(title(item))}">`
+          : `<video src="${item.preview}" muted playsinline preload="metadata"></video><span class="play"></span>`;
+        return `<div class="thumb ${item.type !== "carousel" ? "video" : ""} js-open" data-file="${esc(item.file)}">${media}</div>`;
+      }
+      function contentRow(item, archive = false) {
+        const legacy = archive && isLegacy(item);
+        const cloudApproval = item.cloudManaged && item.publishMode === "approval" && item.ready && item.approvalStatus !== "rejected";
+        const action = item.cloudManaged
+          ? `<div class="row-action"><button class="button secondary js-open" type="button" data-file="${esc(item.file)}">Ansehen</button>${!archive && cloudApproval ? `<button class="button publish js-publish" type="button" data-file="${esc(item.file)}">${item.approvalStatus === "approved" ? "Jetzt veröffentlichen" : "Freigeben &amp; veröffentlichen"}</button>` : ""}</div>`
+          : archive
+          ? `<div class="row-action"><button class="button secondary js-open" type="button" data-file="${esc(item.file)}">Ansehen</button>${legacy ? `<button class="button publish js-publish" type="button" data-file="${esc(item.file)}">Erneut veröffentlichen</button>` : ""}</div>`
+          : `<div class="row-action"><button class="button secondary js-open" type="button" data-file="${esc(item.file)}">Ansehen</button><button class="button publish js-publish" type="button" data-file="${esc(item.file)}">Prüfen &amp; veröffentlichen</button></div>`;
+        const cloudState = !item.instagramConnected ? "Instagram nicht verbunden" : item.publishMode === "approval" ? (item.approvalStatus === "approved" ? "freigegeben" : item.approvalStatus === "rejected" ? "abgelehnt" : "Freigabe offen") : item.publishMode === "automatic" ? "automatisch geplant" : "Veröffentlichung gesperrt";
+        const stateText = item.cloudManaged ? `${item.published ? "veröffentlicht" : item.status === "publishing" ? "wird veröffentlicht" : cloudState}` : legacy ? "Früherer Inhalt · Veröffentlichungsstatus nicht eindeutig" : archive ? `Veröffentlicht am ${date(item.publishedAt, true)}` : "Freigabe offen";
+        return `<article class="content-row">${thumb(item)}<div class="content-copy"><div class="meta"><span class="type">${typeLabel(item.type)}</span><span>•</span><span>${date(item.updatedAt || item.sortAt, true)}</span></div><h3>${esc(title(item))}</h3><p class="caption">${esc(item.caption || "Inhalt öffnen und Vorschau prüfen.")}</p><span class="status ${archive && !legacy ? "published" : ""}">${stateText}</span></div>${action}</article>`;
+      }
+      function renderApprovals() {
+        const manifests = readyCustomer() ? allManifests() : [];
+        const pending = sorted(manifests.filter((item) => item.ready && !item.published && !isLegacy(item) && (!item.cloudManaged || item.publishMode === "approval")));
+        const filtered = state.filter === "all" ? pending : pending.filter((item) => item.type === state.filter);
+        $("pendingCount").textContent = `${pending.length} bereit`;
+        $("approvalList").innerHTML = filtered.length ? filtered.map((item) => contentRow(item)).join("") : `<div class="empty"><div class="empty-mark">✓</div><h3>Alles erledigt</h3><p>Aktuell wartet nichts auf deine Freigabe. Neue Inhalte erscheinen automatisch hier.</p></div>`;
+      }
+      function renderToday() {
+        const manifests = state.data?.manifests || [];
+        const cloudAssets = state.data?.cloudFactory?.assets || [];
+        const today = localDateKey();
+        const schedule = (state.data?.plan || []).find((row) => row.date === today) || {};
+        const slots = [
+          ["story", schedule.storyMorning || "08:00", "Story", "morning"],
+          ["carousel", schedule.carousel || "12:30", "Karussell", ""],
+          ["reel", schedule.reel || "19:30", "Reel", ""],
+          ["story", schedule.storyEvening || "19:45", "Teaser", "evening"],
+        ];
+        const rows = slots.map(([type, time, label, storySlot]) => {
+          const cloudSlot = type === "carousel" ? "carousel" : type === "reel" ? "reel" : storySlot === "evening" ? "storyEvening" : "storyMorning";
+          const cloudItem = cloudAssets.find((entry) => entry.slot === cloudSlot && String(entry.scheduled_at || "").startsWith(today));
+          const item = sorted(manifests).find((entry) => {
+            if (entry.type !== type || dateKey(entry) !== today) return false;
+            if (type !== "story") return true;
+            const isEvening = /story-evening|reel-teaser/i.test(entry.file || entry.slug);
+            return storySlot === "evening" ? isEvening : !isEvening;
+          });
+          const done = Boolean(cloudItem && ["ready", "publishing", "published"].includes(cloudItem.status)) || Boolean(item?.ready || item?.published);
+          const status = cloudItem?.status || (item?.published ? "published" : item?.ready ? "ready" : "planned");
+          return { type, time, label, item, cloudItem, done, status };
+        });
+        $("todayDate").textContent = date(today);
+        $("todayProgress").innerHTML = rows.map((row) => `<span class="${row.done ? "done" : ""}"></span>`).join("");
+        const statusLabel = { planned: "geplant", generating: "wird erstellt", rendering: "wird gerendert", ready: "bereit", publishing: "wird veröffentlicht", published: "veröffentlicht", failed: "Fehler" };
+        $("todayList").innerHTML = rows.map((row) => `<div class="today-item"><span class="today-time">${row.time}</span><strong>${row.label}</strong><span class="today-state ${row.done ? "done" : ""}">${statusLabel[row.status] || "offen"}</span></div>`).join("");
+      }
+      function renderArchive() {
+        const published = readyCustomer() ? sorted(allManifests().filter((item) => item.published || (!item.cloudManaged && isLegacy(item)))) : [];
+        $("archiveCount").textContent = `${published.length} Inhalte`;
+        $("archiveList").innerHTML = published.length ? published.map((item) => contentRow(item, true)).join("") : `<div class="empty"><h3>Noch keine Veröffentlichungen</h3></div>`;
+      }
+      function addDaysKey(value, days) {
+        const d = new Date(`${value}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10);
+      }
+      function mondayKey(value) {
+        const d = new Date(`${value}T12:00:00Z`); const weekday = d.getUTCDay(); return addDaysKey(value, weekday === 0 ? -6 : 1 - weekday);
+      }
+      function nextWeekKey() { return addDaysKey(mondayKey(localDateKey()), 7); }
+      function normalizeEditorialWeek(week) {
+        return week ? { ...week, weekStart: week.week_start || week.weekStart, items: (week.items || []).map((item) => ({
+          ...item,
+          contentDate: item.content_date || item.contentDate,
+          mainFormat: item.main_format || item.mainFormat,
+          contentMode: item.content_mode || item.contentMode,
+          visualFamily: item.visual_family || item.visualFamily,
+          storyHook: item.story_hook || item.storyHook,
+          ctaType: item.cta_type || item.ctaType,
+        })) } : null;
+      }
+      function selectedEditorialWeek() {
+        const weeks = (state.data?.cloudFactory?.editorialWeeks || []).map(normalizeEditorialWeek);
+        return weeks.find((week) => week.status === "draft") || weeks.find((week) => week.weekStart >= mondayKey(localDateKey())) || weeks[0] || null;
+      }
+      function weekStatus(status, source) { return source === "fallback" ? "Ersatzplan" : ({ draft: "Entwurf", approved: "Freigegeben", locked: "In Produktion", fallback: "Ersatzplan" })[status] || status; }
+      function weekday(value) { return new Intl.DateTimeFormat("de-DE", { weekday: "short" }).format(new Date(`${value}T12:00:00`)); }
+      function renderPlan() {
+        const week = selectedEditorialWeek();
+        const toolbar = $("editorialToolbar");
+        const grid = $("editorialGrid");
+        if (state.data?.cloudFactory?.v5ShadowMode && !$("editorialNotice").classList.contains("show")) editorialNotice("V5 Testphase: Freigegebene Inhalte werden vorbereitet und geprüft, aber noch nicht automatisch an Instagram gesendet.");
+        $("weekCount").textContent = week ? `${week.items.length} Tage` : "Noch offen";
+        if (!week) {
+          toolbar.innerHTML = `<div><small>Nächste Woche</small><strong>${date(nextWeekKey())}–${date(addDaysKey(nextWeekKey(), 6))}</strong></div><div class="editorial-actions"><button class="button publish js-week-propose" type="button">Themen vorschlagen</button></div>`;
+          grid.innerHTML = `<div class="editorial-empty"><h3>Noch keine Themen vorgeschlagen</h3><p>Das System erstellt sieben konkrete Themen mit Story-Idee, Blickwinkel und festem Hauptformat. Danach kannst du jeden Vorschlag bearbeiten.</p><button class="button publish js-week-propose" type="button">Woche vorbereiten</button></div>`;
+          return;
         }
-        $("customerList").innerHTML = customer ? `
-          <article class="customer-card">
-            <h3>${escapeHtml(customer.company || customer.name)}</h3>
-            <div>
-              <span class="pill green">${escapeHtml(customer.status || "active")}</span>
-              <span class="pill ${onboardingStatus(customer).cls}">${onboardingStatus(customer).label}</span>
-              ${customer.instagram ? `<span class="pill">${escapeHtml(customer.instagram)}</span>` : ""}
-              ${customer.language ? `<span class="pill gray">${escapeHtml(customer.language)}</span>` : ""}
-            </div>
-            <div class="customer-meta small">
-              <div><strong>ID</strong><br>${escapeHtml(customer.id)}</div>
-              <div><strong>Branche</strong><br>${escapeHtml(customer.industry || "-")}</div>
-              <div><strong>Kontakt</strong><br>${escapeHtml(customer.owner || "-")}</div>
-              <div><strong>Ort</strong><br>${escapeHtml(customer.city || "-")}</div>
-            </div>
-            ${customer.positioning ? `<p class="small" style="margin:12px 0 0">${escapeHtml(customer.positioning)}</p>` : ""}
-          </article>
-        ` : `<div class="small">Noch kein Kunde angelegt.</div>`;
-      }
-
-      function canShowContent() {
-        return state.activeCustomer?.id === "hasi-elektronic" && customerReady(state.activeCustomer);
-      }
-
-      function canShowPlan() {
-        return Boolean(state.activeCustomer?.onboarding?.contentPlan);
-      }
-
-      function render(data) {
-        state.data = data;
-        $("apiStatus").innerHTML = data.instagram.ok ? '<span class="ok">OK</span>' : '<span class="bad">Fehler</span>';
-        renderCustomers(data.customers || []);
-        const showContent = canShowContent();
-        const visibleManifests = showContent ? newestFirst(data.manifests || []) : [];
-        const visiblePlan = canShowPlan() ? customerPlan(state.activeCustomer) : [];
-        const visibleLog = showContent ? data.log : [];
-        const completedToday = todayCompletedCount(visibleManifests);
-        $("todayCount").textContent = showContent ? `${completedToday}/3` : "-";
-        $("readyCount").textContent = visibleManifests.filter((item) => item.ready && !item.published).length;
-        $("todaySummary").innerHTML = showContent ? renderTodaySummary(visibleManifests) : "";
-
-        $("manifestGroups").innerHTML = ["carousel", "reel", "story"]
-          .map((type) => renderGroup(type, visibleManifests.filter((item) => item.type === type)))
-          .join("") + (!showContent && state.activeCustomer ? renderOnboardingPanel(state.activeCustomer) : "");
-
-        $("planRows").innerHTML = `
-          <div class="plan-row plan-head">
-            <div>Datum</div>
-            <div>Thema</div>
-            <div>Karussell</div>
-            <div>Reel</div>
-            <div>Story</div>
+        const editable = week.status === "draft";
+        const displayedStatus = weekStatus(week.status, week.source);
+        const statusClass = week.source === "fallback" ? "fallback" : week.status;
+        toolbar.innerHTML = `<div><small>Woche</small><strong>${date(week.weekStart)}–${date(addDaysKey(week.weekStart, 6))}</strong></div><div class="editorial-actions"><span class="week-status ${esc(statusClass)}">${displayedStatus}</span>${editable ? `<button class="button publish js-week-approve" type="button" data-week="${week.weekStart}">Woche freigeben</button>` : ""}</div>`;
+        grid.innerHTML = week.items.map((item) => `<article class="editorial-card" data-editorial-id="${esc(item.id)}">
+          <div class="editorial-day">${weekday(item.contentDate)}<strong>${date(item.contentDate).slice(0, 5)}</strong></div>
+          <div class="editorial-copy">
+            <input class="editorial-topic" value="${esc(item.topic)}" ${editable ? "" : "disabled"} aria-label="Thema">
+            <textarea class="editorial-angle" ${editable ? "" : "disabled"} aria-label="Blickwinkel">${esc(item.angle)}</textarea>
+            <div class="editorial-meta"><span class="editorial-chip format">${item.mainFormat === "carousel" ? "Karussell" : "Reel"}</span><span class="editorial-chip">Story: ${esc(item.storyHook)}</span><span class="editorial-chip">${esc(item.visualFamily)}</span>${item.ctaType === "contact" ? `<span class="editorial-chip cta">Kontakt-CTA</span>` : ""}</div>
           </div>
-        ` + (visiblePlan.length ? visiblePlan.map((row) => `
-          <div class="plan-row">
-            <div class="small">${formatGermanDate(row.date)}</div>
-            <div class="topic">${row.topic}</div>
-            <div class="pill">${row.carousel}</div>
-            <div class="pill">${row.reel}</div>
-            <div class="pill">${row.story}</div>
-          </div>
-        `).join("") : `<div class="notice" style="margin-top:12px">Noch kein 14-Tage-Plan für diesen Kunden eingerichtet.</div>`);
-
-        $("automationRows").innerHTML = [...data.automations].sort((a, b) => automationScheduleLabel(a).localeCompare(automationScheduleLabel(b))).map((item) => `
-          <tr>
-            <td><strong>${item.name}</strong><div class="small">${item.id}</div></td>
-            <td><span class="pill ${item.status === "ACTIVE" ? "green" : "red"}">${item.status || "?"}</span></td>
-            <td><strong>${automationScheduleLabel(item)}</strong><div class="small">${escapeHtml(item.schedule).replaceAll("\\n", "<br>")}</div></td>
-          </tr>
-        `).join("");
-
-        $("logBox").textContent = renderLogs(visibleLog);
+          <div class="editorial-card-actions">${editable ? `<button class="button secondary js-editorial-save" type="button" data-week="${week.weekStart}" data-item="${esc(item.id)}">Speichern</button><button class="button js-editorial-regenerate" type="button" data-week="${week.weekStart}" data-item="${esc(item.id)}">Neu vorschlagen</button>` : `<span class="week-status ${esc(statusClass)}">${displayedStatus}</span>`}</div>
+        </article>`).join("");
       }
-
-      function findManifest(file) {
-        return state.data?.manifests.find((item) => item.file === file);
+      function renderProfile() {
+        const c = state.customer || {};
+        const ob = c.onboarding || {};
+        const cells = [["Unternehmen", c.company], ["Instagram", c.instagram], ["Ansprechpartner", c.owner], ["Ort", c.city], ["Branche", c.industry], ["Veröffentlichung", ob.publishPermission === "direct" ? "Direkte Veröffentlichung aktiv" : "Freigabe erforderlich"]];
+        $("profileGrid").innerHTML = cells.map(([label, value]) => `<div class="profile-cell"><div class="profile-label">${label}</div><div class="profile-value">${esc(value || "–")}</div></div>`).join("");
       }
-
-      function renderPreviewStage() {
-        const item = state.previewItem;
+      function render() {
+        const customers = state.data.customers || [];
+        state.customer = customers.find((item) => item.id === customerId()) || customers.find((item) => item.id === "hasi-elektronic") || customers[0];
+        const c = state.customer || {};
+        $("brandName").textContent = c.company || "Hasi Social Media";
+        $("accountName").textContent = c.company || "Kein Kunde";
+        $("accountHandle").textContent = c.instagram || "";
+        if (c.instagram) $("instagramLink").href = `https://www.instagram.com/${c.instagram.replace(/^@/, "")}/`;
+        else $("instagramLink").style.display = "none";
+        renderApprovals(); renderToday(); renderArchive(); renderPlan(); renderProfile(); renderNav();
+      }
+      function findItem(file) { return allManifests().find((item) => item.file === file); }
+      function renderStudioMedia() {
+        const item = state.item;
         if (!item) return;
-        const stage = $("modalStage");
-        const url = item.urls[state.previewIndex] || item.preview;
-        if (item.type === "carousel") {
-          const hasMany = item.urls.length > 1;
-          stage.innerHTML = `
-            <div>
-              <img src="${url}" alt="${item.slug} Slide ${state.previewIndex + 1}">
-              ${hasMany ? `
-                <div class="slide-nav">
-                  <button type="button" class="js-slide-prev" ${state.previewIndex === 0 ? "disabled" : ""}>Zurück</button>
-                  <span class="slide-counter">${state.previewIndex + 1}/${item.urls.length}</span>
-                  <button type="button" class="js-slide-next" ${state.previewIndex === item.urls.length - 1 ? "disabled" : ""}>Weiter</button>
-                </div>
-              ` : ""}
-            </div>
-          `;
-        } else {
-          stage.innerHTML = `<video src="${url}" controls autoplay playsinline></video>`;
-        }
+        const url = item.urls[state.slide] || item.preview;
+        $("studioMedia").innerHTML = item.type === "carousel" ? `<img class="studio-media" src="${url}" alt="${esc(title(item))}">` : `<video class="studio-media" src="${url}" controls autoplay playsinline></video>`;
+        const multi = item.type === "carousel" && item.urls.length > 1;
+        $("prevSlide").style.display = multi ? "" : "none";
+        $("nextSlide").style.display = multi ? "" : "none";
+        $("prevSlide").disabled = state.slide === 0;
+        $("nextSlide").disabled = state.slide >= item.urls.length - 1;
+        $("slideCount").textContent = multi ? `${state.slide + 1} / ${item.urls.length}` : "";
       }
-
-      function openPreview(file) {
-        const item = findManifest(file);
+      function openStudio(file) {
+        const item = findItem(file);
         if (!item) return;
-        const modal = $("previewModal");
-        state.previewItem = item;
-        state.previewIndex = 0;
-        $("modalType").textContent = typeLabel(item.type);
-        $("modalTitle").textContent = displayManifestName(item);
-        $("modalCaption").textContent = item.caption || formatSlugOrFile(item.slug);
-        $("modalStatus").innerHTML = statusPill(item);
-        $("modalUrls").innerHTML = item.urls.map((url, index) => (
-          `<a href="${url}" target="_blank" rel="noreferrer">URL ${index + 1}: ${url}</a>`
-        )).join("");
-
-        renderPreviewStage();
-        modal.classList.add("open");
-        modal.setAttribute("aria-hidden", "false");
+        const legacy = isLegacy(item);
+        state.item = item; state.slide = 0;
+        $("studioType").textContent = typeLabel(item.type);
+        $("studioStatus").textContent = item.published ? "veröffentlicht" : item.cloudManaged ? (item.status === "publishing" ? "wird veröffentlicht" : item.publishMode === "approval" ? (item.approvalStatus === "approved" ? "freigegeben" : "Freigabe offen") : item.publishMode === "automatic" ? "automatisch geplant" : "gesperrt") : legacy ? "früherer Inhalt" : "Freigabe offen";
+        $("studioStatus").className = `status ${item.published ? "published" : ""}`;
+        $("studioTitle").textContent = title(item);
+        $("studioCaption").textContent = item.caption || "Keine Caption hinterlegt.";
+        $("studioFormat").textContent = item.type === "carousel" ? `${item.urls.length} ${item.urls.length === 1 ? "Slide" : "Slides"} · 4:5` : "Video · 9:16";
+        $("studioDate").textContent = date(item.publishedAt || item.updatedAt, true);
+        $("publishProgress").classList.remove("show"); $("successBox").classList.remove("show"); $("errorBox").classList.remove("show");
+        $("studioActions").innerHTML = item.published
+          ? `<span class="status published">Bereits veröffentlicht</span>`
+          : item.cloudManaged && item.publishMode === "approval" && item.ready && item.approvalStatus !== "rejected"
+          ? `<button class="button publish js-publish" type="button" data-file="${esc(item.file)}">${item.approvalStatus === "approved" ? "Jetzt veröffentlichen" : "Freigeben &amp; veröffentlichen"}</button>`
+          : item.cloudManaged
+          ? `<span class="status">${!item.instagramConnected ? "Instagram nicht verbunden" : item.publishMode === "automatic" ? "Automatische Veröffentlichung geplant" : "Veröffentlichung gesperrt"}</span>`
+          : item.ready ? `<button class="button publish js-publish" type="button" data-file="${esc(item.file)}">${legacy ? "Erneut veröffentlichen" : "Prüfen &amp; veröffentlichen"}</button>` : `<button class="button publish" type="button" disabled>Nicht veröffentlichungsbereit</button>`;
+        renderStudioMedia();
+        $("studio").classList.add("open"); $("studio").setAttribute("aria-hidden", "false"); document.body.classList.add("modal-open");
       }
-
-      function closePreview() {
-        const modal = $("previewModal");
-        $("modalStage").innerHTML = "";
-        state.previewItem = null;
-        state.previewIndex = 0;
-        modal.classList.remove("open");
-        modal.setAttribute("aria-hidden", "true");
+      function closeStudio() {
+        if (state.busy) return;
+        $("studio").classList.remove("open"); $("studio").setAttribute("aria-hidden", "true"); $("studioMedia").innerHTML = ""; document.body.classList.remove("modal-open"); state.item = null;
       }
-
-      function shiftPreviewSlide(delta) {
-        if (!state.previewItem || state.previewItem.type !== "carousel") return;
-        const nextIndex = Math.max(0, Math.min(state.previewItem.urls.length - 1, state.previewIndex + delta));
-        if (nextIndex === state.previewIndex) return;
-        state.previewIndex = nextIndex;
-        renderPreviewStage();
-      }
-
-      async function refresh() {
-        setBusy(true);
-        try {
-          render(await api("/api/status"));
-        } catch (error) {
-          $("logBox").textContent = error.message;
-        } finally {
-          setBusy(false);
+      function progress(percent, text) { $("publishProgress").classList.add("show"); $("progressBar").style.width = `${percent}%`; $("progressText").textContent = text; }
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      async function awaitVideoPublish(item, result) {
+        if (!result.pending) return result;
+        for (let attempt = 0; attempt < 90; attempt += 1) {
+          progress(Math.min(92, 58 + attempt), `Instagram verarbeitet ${typeLabel(item.type)} …`);
+          await wait(4000);
+          const status = await api(`/api/publish-status/${item.type}/${encodeURIComponent(item.file)}/${encodeURIComponent(result.containerId)}`, { method: "POST" });
+          if (!status.pending) return status;
         }
+        throw new Error("Instagram verarbeitet das Video länger als erwartet. Der Vorgang kann später erneut geprüft werden.");
       }
-
-      async function publishItem(type, file) {
-        const item = findManifest(file);
-        const label = item ? displayManifestName(item) : file;
-        if (!confirm(`${typeLabel(type)} wirklich auf Instagram veröffentlichen?\\n${label}`)) return;
-        setBusy(true);
-        $("logBox").textContent = "Publishing läuft...";
-        try {
-          const result = await api(`/api/publish/${type}/${encodeURIComponent(file)}`, { method: "POST" });
-          $("logBox").textContent = JSON.stringify(result, null, 2);
-          await refresh();
-        } catch (error) {
-          $("logBox").textContent = error.message;
-        } finally {
-          setBusy(false);
+      async function awaitFactoryPublish(item) {
+        for (let attempt = 0; attempt < 45; attempt += 1) {
+          progress(Math.min(94, 48 + attempt), `Instagram verarbeitet ${typeLabel(item.type)} …`);
+          await wait(4000);
+          const result = await api(`/api/factory-assets/${encodeURIComponent(item.assetId)}/publish-status`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tenantId: customerId() }),
+          });
+          if (result.status === "published") return { instagramId: result.instagram_media_id };
+          if (result.status === "failed") throw new Error(result.error || "Instagram hat die Veröffentlichung abgelehnt.");
         }
+        return { pending: true };
       }
-
-      async function approveItem(type, file) {
-        const item = findManifest(file);
-        const label = item ? displayManifestName(item) : file;
-        if (!confirm(`${typeLabel(type)} freigeben?\n${label}\n\nDanach kann der Inhalt veröffentlicht werden.`)) return;
-        setBusy(true);
-        $("logBox").textContent = "Freigabe wird gespeichert...";
+      async function publish(file) {
+        const item = findItem(file);
+        if (!item || item.published || state.busy) return;
+        const legacy = isLegacy(item);
+        const question = item.cloudManaged
+          ? `${typeLabel(item.type)} freigeben und jetzt auf Instagram veröffentlichen?\n\n${title(item)}`
+          : legacy
+          ? `${typeLabel(item.type)} möglicherweise bereits veröffentlicht. Wirklich erneut auf Instagram veröffentlichen?\n\n${title(item)}`
+          : `${typeLabel(item.type)} jetzt prüfen und auf Instagram veröffentlichen?\n\n${title(item)}`;
+        if (!confirm(question)) return;
+        state.busy = true;
+        openStudio(file);
+        $("studioActions").innerHTML = `<button class="button publish" disabled>Veröffentlichung läuft …</button>`;
+        $("errorBox").classList.remove("show");
         try {
-          const result = await api(`/api/approve/${type}/${encodeURIComponent(file)}`, { method: "POST" });
-          $("logBox").textContent = result.skipped ? "Dieser Inhalt war bereits freigegeben." : "Freigabe wurde erfolgreich gespeichert.";
-          await refresh();
+          progress(18, "Medien werden geprüft …");
+          setTimeout(() => state.busy && progress(38, "Freigabe wird gespeichert …"), 700);
+          setTimeout(() => state.busy && progress(64, `Instagram verarbeitet ${typeLabel(item.type)} …`), 1800);
+          let result;
+          if (item.cloudManaged) {
+            await api(`/api/factory-assets/${encodeURIComponent(item.assetId)}/approve`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ tenantId: customerId(), publishNow: true }),
+            });
+            result = await awaitFactoryPublish(item);
+          } else {
+            result = await api(`/api/publish/${item.type}/${encodeURIComponent(item.file)}`, { method: "POST" });
+            result = await awaitVideoPublish(item, result);
+          }
+          progress(100, result.pending ? "Veröffentlichung gestartet" : "Veröffentlicht");
+          $("successBox").innerHTML = result.pending
+            ? `<strong>Freigabe gespeichert</strong><br>Instagram verarbeitet den Inhalt weiter. Der Status wird automatisch aktualisiert.`
+            : `<strong>Erfolgreich veröffentlicht</strong><br>Instagram Media ID: ${esc(result.instagramId || "bestätigt")}`;
+          $("successBox").classList.add("show");
+          $("studioActions").innerHTML = `<a class="button secondary" href="${$("instagramLink").href}" target="_blank" rel="noreferrer">Auf Instagram ansehen</a>`;
+          await refresh(false);
         } catch (error) {
-          $("logBox").textContent = `Freigabe fehlgeschlagen: ${error.message}`;
-        } finally {
-          setBusy(false);
-        }
+          $("publishProgress").classList.remove("show");
+          $("errorBox").textContent = `Die Veröffentlichung ist fehlgeschlagen. ${error.message}`;
+          $("errorBox").classList.add("show");
+          $("studioActions").innerHTML = `<button class="button publish js-publish" type="button" data-file="${esc(item.file)}">Erneut versuchen</button>`;
+        } finally { state.busy = false; }
       }
-
-      $("refreshBtn").addEventListener("click", refresh);
+      function editorialNotice(message, error = false) {
+        const box = $("editorialNotice");
+        box.textContent = message;
+        box.className = `editorial-notice show${error ? " error" : ""}`;
+      }
+      async function proposeWeek() {
+        if (state.editorialBusy) return;
+        state.editorialBusy = true;
+        editorialNotice("Die Themen für die nächste Woche werden vorbereitet …");
+        try {
+          await api(`/api/editorial-weeks/${nextWeekKey()}/propose`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tenantId: customerId() }) });
+          await refresh(false);
+          editorialNotice("Die Woche ist bereit. Du kannst Themen und Blickwinkel jetzt prüfen.");
+        } catch (error) { editorialNotice(`Die Wochenplanung konnte nicht erstellt werden. ${error.message}`, true); }
+        finally { state.editorialBusy = false; }
+      }
+      async function saveEditorialItem(button) {
+        if (state.editorialBusy) return;
+        const card = button.closest(".editorial-card");
+        const topic = card.querySelector(".editorial-topic").value.trim();
+        const angle = card.querySelector(".editorial-angle").value.trim();
+        if (!topic || !angle) return editorialNotice("Thema und Blickwinkel dürfen nicht leer sein.", true);
+        state.editorialBusy = true; button.disabled = true;
+        try {
+          await api(`/api/editorial-weeks/${button.dataset.week}/items/${encodeURIComponent(button.dataset.item)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tenantId: customerId(), topic, angle }) });
+          await refresh(false); editorialNotice("Änderung gespeichert.");
+        } catch (error) { editorialNotice(`Änderung nicht gespeichert. ${error.message}`, true); }
+        finally { state.editorialBusy = false; button.disabled = false; }
+      }
+      async function regenerateEditorial(button) {
+        if (state.editorialBusy) return;
+        state.editorialBusy = true; button.disabled = true;
+        editorialNotice("Ein neuer Vorschlag wird erstellt …");
+        try {
+          await api(`/api/editorial-weeks/${button.dataset.week}/items/${encodeURIComponent(button.dataset.item)}/regenerate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tenantId: customerId() }) });
+          await refresh(false); editorialNotice("Der neue Vorschlag ist bereit.");
+        } catch (error) { editorialNotice(`Kein neuer Vorschlag erstellt. ${error.message}`, true); }
+        finally { state.editorialBusy = false; button.disabled = false; }
+      }
+      async function approveWeek(button) {
+        if (state.editorialBusy || !confirm("Diese Woche freigeben? Danach werden die Inhalte produziert und die Themen können nicht mehr geändert werden.")) return;
+        state.editorialBusy = true; button.disabled = true;
+        editorialNotice("Die Woche wird freigegeben und für die Produktion vorbereitet …");
+        try {
+          await api(`/api/editorial-weeks/${button.dataset.week}/approve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tenantId: customerId() }) });
+          await refresh(false); editorialNotice("Woche freigegeben. Die Inhalte werden jetzt im sicheren Testmodus produziert.");
+        } catch (error) { editorialNotice(`Freigabe fehlgeschlagen. ${error.message}`, true); }
+        finally { state.editorialBusy = false; button.disabled = false; }
+      }
+      async function refresh(showLoading = true) {
+        if (showLoading) $("refreshBtn").disabled = true;
+        try {
+          state.data = await api(`/api/status?tenant=${encodeURIComponent(customerId())}`);
+          render();
+          const previewFile = new URLSearchParams(location.search).get("preview");
+          if (previewFile && !state.item) openStudio(previewFile);
+        }
+        catch (error) { $("approvalList").innerHTML = `<div class="empty"><h3>Daten konnten nicht geladen werden</h3><p>${esc(error.message)}</p></div>`; }
+        finally { $("refreshBtn").disabled = false; }
+      }
       document.addEventListener("click", (event) => {
-        const previewTarget = event.target.closest(".js-preview, .js-preview-btn");
-        if (previewTarget) {
-          openPreview(previewTarget.dataset.file);
-          return;
-        }
-        const publishTarget = event.target.closest(".js-publish-btn");
-        if (publishTarget) {
-          publishItem(publishTarget.dataset.type, publishTarget.dataset.file);
-          return;
-        }
-        const approveTarget = event.target.closest(".js-approve-btn");
-        if (approveTarget) {
-          approveItem(approveTarget.dataset.type, approveTarget.dataset.file);
-          return;
-        }
-        if (event.target.closest(".js-slide-prev")) {
-          shiftPreviewSlide(-1);
-          return;
-        }
-        if (event.target.closest(".js-slide-next")) {
-          shiftPreviewSlide(1);
-        }
+        const view = event.target.closest("[data-view]"); if (view) { showView(view.dataset.view); return; }
+        const filter = event.target.closest("[data-filter]"); if (filter) { state.filter = filter.dataset.filter; document.querySelectorAll("[data-filter]").forEach((node) => node.classList.toggle("active", node === filter)); renderApprovals(); return; }
+        const propose = event.target.closest(".js-week-propose"); if (propose) { proposeWeek(); return; }
+        const approve = event.target.closest(".js-week-approve"); if (approve) { approveWeek(approve); return; }
+        const saveEditorial = event.target.closest(".js-editorial-save"); if (saveEditorial) { saveEditorialItem(saveEditorial); return; }
+        const regenerate = event.target.closest(".js-editorial-regenerate"); if (regenerate) { regenerateEditorial(regenerate); return; }
+        const open = event.target.closest(".js-open"); if (open) { openStudio(open.dataset.file); return; }
+        const publishButton = event.target.closest(".js-publish"); if (publishButton) { publish(publishButton.dataset.file); }
       });
-      $("modalClose").addEventListener("click", closePreview);
-      $("previewModal").addEventListener("click", (event) => {
-        if (event.target.id === "previewModal") closePreview();
-      });
-      window.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") closePreview();
-        if (event.key === "ArrowLeft") shiftPreviewSlide(-1);
-        if (event.key === "ArrowRight") shiftPreviewSlide(1);
-      });
-      refresh();
+      $("refreshBtn").addEventListener("click", () => refresh());
+      $("closeStudio").addEventListener("click", closeStudio);
+      $("prevSlide").addEventListener("click", () => { state.slide = Math.max(0, state.slide - 1); renderStudioMedia(); });
+      $("nextSlide").addEventListener("click", () => { state.slide = Math.min(state.item.urls.length - 1, state.slide + 1); renderStudioMedia(); });
+      window.addEventListener("keydown", (event) => { if (event.key === "Escape") closeStudio(); });
+      renderNav(); refresh();
     </script>
   </body>
 </html>

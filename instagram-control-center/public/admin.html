@@ -230,9 +230,32 @@
       }
       @media (max-width: 980px) {
         .layout, .grid, form { grid-template-columns: 1fr; }
-        aside { position: relative; height: auto; }
+        aside { position: relative; height: auto; padding: 18px 20px; }
+        .brand {
+          grid-template-columns: 46px 1fr;
+          gap: 11px;
+          margin-bottom: 12px;
+          padding-bottom: 14px;
+        }
+        .mark { width: 46px; height: 46px; border-radius: 8px; }
+        .mark img { width: 35px; height: 35px; }
+        nav { display: flex; gap: 8px; }
+        nav a { margin: 0; padding: 9px 12px; }
         header { flex-direction: column; }
         .field.full { grid-column: auto; }
+        main { padding: 24px 20px 36px; }
+        .title-row { align-items: flex-start; gap: 12px; }
+        .header-logo { width: 50px; height: 50px; flex: 0 0 auto; }
+        h1 { font-size: clamp(27px, 8vw, 34px); line-height: 1.08; }
+        .subtitle { font-size: 15px; line-height: 1.45; }
+        .card { padding: 16px; }
+      }
+      @media (max-width: 520px) {
+        .customer-meta, .checklist, .check-grid { grid-template-columns: 1fr; }
+        .title-row { display: grid; grid-template-columns: 50px minmax(0, 1fr); }
+        .notice { font-size: 13px; }
+        .form-actions { align-items: stretch; flex-direction: column; }
+        .form-actions .btn { justify-content: center; width: 100%; }
       }
     </style>
   </head>
@@ -286,6 +309,17 @@
                 <input id="email" name="email" type="email" placeholder="kontakt@firma.de">
               </div>
               <div class="field">
+                <label for="loginEmail">Portal-E-Mail</label>
+                <input id="loginEmail" name="loginEmail" type="email" autocomplete="off" placeholder="portal@firma.de">
+              </div>
+              <div class="field">
+                <label for="temporaryPassword">Temporäres Passwort</label>
+                <input id="temporaryPassword" name="temporaryPassword" type="password" autocomplete="new-password" minlength="12" placeholder="Mindestens 12 Zeichen">
+              </div>
+              <div class="field full">
+                <label class="check-label"><input id="loginEnabled" name="loginEnabled" type="checkbox"> Kundenportal-Zugang aktivieren</label>
+              </div>
+              <div class="field">
                 <label for="phone">Telefon</label>
                 <input id="phone" name="phone" placeholder="0711 / ...">
               </div>
@@ -323,15 +357,15 @@
               </div>
               <div class="field">
                 <label for="carouselTime">Karussell Zeit</label>
-                <input id="carouselTime" name="carouselTime" value="08:00">
+                <input id="carouselTime" name="carouselTime" value="12:30">
               </div>
               <div class="field">
                 <label for="reelTime">Reel Zeit</label>
-                <input id="reelTime" name="reelTime" value="08:30">
+                <input id="reelTime" name="reelTime" value="19:30">
               </div>
               <div class="field">
                 <label for="storyTime">Story Zeit</label>
-                <input id="storyTime" name="storyTime" value="09:00">
+                <input id="storyTime" name="storyTime" value="08:00">
               </div>
               <div class="field full">
                 <label for="positioning">Positionierung</label>
@@ -351,13 +385,26 @@
                 </div>
               </div>
               <div class="field full">
-                <label for="publishPermission">Yayın onayı</label>
-                <select id="publishPermission" name="publishPermission">
-                  <option value="missing">Noch offen</option>
-                  <option value="approval">Erst Freigabe, dann Publish</option>
-                  <option value="direct">Direkt veröffentlichen erlaubt</option>
+                <label for="factoryPublishMode">Veröffentlichungsmodus</label>
+                <select id="factoryPublishMode" name="factoryPublishMode">
+                  <option value="disabled">Veröffentlichung gesperrt</option>
+                  <option value="approval">Erst nach Kundenfreigabe</option>
+                  <option value="automatic">Vollautomatisch veröffentlichen</option>
                 </select>
               </div>
+              <div class="field">
+                <label for="instagramUserRef">Instagram-ID Binding</label>
+                <input id="instagramUserRef" name="instagramUserRef" autocomplete="off" placeholder="KUNDE_IG_USER_ID">
+              </div>
+              <div class="field">
+                <label for="instagramSecretRef">Instagram-Token Binding</label>
+                <input id="instagramSecretRef" name="instagramSecretRef" autocomplete="off" placeholder="KUNDE_IG_ACCESS_TOKEN">
+              </div>
+              <div class="field">
+                <label for="graphVersion">Meta Graph API</label>
+                <input id="graphVersion" name="graphVersion" value="v25.0" pattern="v[0-9]+\.[0-9]+">
+              </div>
+              <div class="field full small">Hier stehen nur die Namen der verschlüsselten Cloudflare-Secrets. Token-Werte werden nie im Kundenkonto gespeichert.</div>
               <div class="field full">
                 <label for="onboardingNotes">Onboarding Notizen</label>
                 <textarea id="onboardingNotes" name="notes" placeholder="Was fehlt noch? Wer muss was liefern?"></textarea>
@@ -402,20 +449,20 @@
       function onboardingStatus(customer) {
         const ob = customer.onboarding || {};
         const mediaOk = Boolean(ob.productPhotos && ob.productList && ob.instagramBusiness && ob.facebookPage && ob.metaAccess && ob.publishPermission !== "missing");
-        if (!ob.profileComplete) return { label: "Profil eksik", cls: "red" };
-        if (!ob.brandComplete) return { label: "Marka bilgileri eksik", cls: "orange" };
-        if (!mediaOk) return { label: "Medya erişimi eksik", cls: "orange" };
-        if (!ob.contentPlan) return { label: "İçerik planı eksik", cls: "orange" };
-        return { label: "Yayına hazır", cls: "green" };
+        if (!ob.profileComplete) return { label: "Profil unvollständig", cls: "red" };
+        if (!ob.brandComplete) return { label: "Markendaten fehlen", cls: "orange" };
+        if (!mediaOk) return { label: "Medienzugriff fehlt", cls: "orange" };
+        if (!ob.contentPlan) return { label: "Inhaltsplan fehlt", cls: "orange" };
+        return { label: "Veröffentlichungsbereit", cls: "green" };
       }
 
       function checklist(customer) {
         const ob = customer.onboarding || {};
         return [
           ["Profil", ob.profileComplete],
-          ["Logo / Marka", ob.brandComplete],
-          ["Ürün foto", ob.productPhotos],
-          ["Ürün liste", ob.productList],
+          ["Logo / Marke", ob.brandComplete],
+          ["Produktbilder", ob.productPhotos],
+          ["Produktliste", ob.productList],
           ["Instagram Business", ob.instagramBusiness],
           ["Facebook Page", ob.facebookPage],
           ["Meta Zugriff", ob.metaAccess],
@@ -435,6 +482,8 @@
               <span class="pill ${onboardingStatus(customer).cls}">${onboardingStatus(customer).label}</span>
               ${customer.instagram ? `<span class="pill">${escapeHtml(customer.instagram)}</span>` : ""}
               ${customer.language ? `<span class="pill gray">${escapeHtml(customer.language)}</span>` : ""}
+              <span class="pill ${customer.portal?.enabled ? "green" : "gray"}">${customer.portal?.enabled ? "Portal aktiv" : "Portal aus"}</span>
+              <span class="pill ${customer.factory?.publishMode === "automatic" ? "green" : customer.factory?.publishMode === "approval" ? "orange" : "gray"}">${customer.factory?.publishMode === "automatic" ? "Automatisch" : customer.factory?.publishMode === "approval" ? "Mit Freigabe" : "Publish gesperrt"}</span>
             </div>
             <div class="customer-meta small">
               <div><strong>ID</strong><br>${escapeHtml(customer.id)}</div>
@@ -458,10 +507,13 @@
         $("primary").value = "#3ABADF";
         $("accent").value = "#FF6B00";
         $("language").value = "de";
-        $("carouselTime").value = "08:00";
-        $("reelTime").value = "08:30";
-        $("storyTime").value = "09:00";
-        $("publishPermission").value = "missing";
+        $("carouselTime").value = "12:30";
+        $("reelTime").value = "19:30";
+        $("storyTime").value = "08:00";
+        $("factoryPublishMode").value = "disabled";
+        $("instagramUserRef").value = "";
+        $("instagramSecretRef").value = "";
+        $("graphVersion").value = "v25.0";
         $("formTitle").textContent = "Kunde anlegen";
         $("submitCustomer").textContent = "Kunde anlegen";
         $("customerFormStatus").textContent = "";
@@ -476,6 +528,9 @@
         $("company").value = customer.company || customer.name || "";
         $("owner").value = customer.owner || "";
         $("email").value = customer.email || "";
+        $("loginEmail").value = customer.portal?.loginEmail || "";
+        $("temporaryPassword").value = "";
+        $("loginEnabled").checked = Boolean(customer.portal?.enabled);
         $("phone").value = customer.phone || "";
         $("city").value = customer.city || "";
         $("instagram").value = customer.instagram || "";
@@ -484,9 +539,9 @@
         $("primary").value = customer.brand?.primary || "#3ABADF";
         $("accent").value = customer.brand?.accent || "#FF6B00";
         $("topics").value = (customer.topics || []).join(", ");
-        $("carouselTime").value = customer.cadence?.carousel || "08:00";
-        $("reelTime").value = customer.cadence?.reel || "08:30";
-        $("storyTime").value = customer.cadence?.story || "09:00";
+        $("carouselTime").value = customer.cadence?.carousel || "12:30";
+        $("reelTime").value = customer.cadence?.reel || "19:30";
+        $("storyTime").value = customer.cadence?.story || "08:00";
         $("positioning").value = customer.positioning || "";
         $("profileComplete").checked = Boolean(ob.profileComplete);
         $("brandComplete").checked = Boolean(ob.brandComplete);
@@ -496,7 +551,10 @@
         $("facebookPage").checked = Boolean(ob.facebookPage);
         $("metaAccess").checked = Boolean(ob.metaAccess);
         $("contentPlan").checked = Boolean(ob.contentPlan);
-        $("publishPermission").value = ob.publishPermission || "missing";
+        $("factoryPublishMode").value = customer.factory?.publishMode || (ob.publishPermission === "direct" ? "automatic" : ob.publishPermission === "approval" ? "approval" : "disabled");
+        $("instagramUserRef").value = customer.factory?.userRef || "";
+        $("instagramSecretRef").value = customer.factory?.secretRef || "";
+        $("graphVersion").value = customer.factory?.graphVersion || "v25.0";
         $("onboardingNotes").value = ob.notes || "";
         $("formTitle").textContent = `${customer.company || customer.name} bearbeiten`;
         $("submitCustomer").textContent = "Kunde speichern";
@@ -518,7 +576,8 @@
         button.disabled = true;
         const payload = Object.fromEntries(new FormData(form).entries());
         payload.secondary = payload.primary || "#41AADE";
-        for (const key of ["profileComplete", "brandComplete", "productPhotos", "productList", "instagramBusiness", "facebookPage", "metaAccess", "contentPlan"]) {
+        payload.publishPermission = payload.factoryPublishMode === "automatic" ? "direct" : payload.factoryPublishMode === "approval" ? "approval" : "missing";
+        for (const key of ["profileComplete", "brandComplete", "productPhotos", "productList", "instagramBusiness", "facebookPage", "metaAccess", "contentPlan", "loginEnabled"]) {
           payload[key] = form.elements[key].checked;
         }
         try {

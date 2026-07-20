@@ -5,7 +5,7 @@ Bu doküman: GitHub'dan kodu çek → CF D1 oluştur → Schema import → Worke
 ## Voraussetzung
 - Wrangler installiert: `npm install -g wrangler`
 - Cloudflare auth: `wrangler login` (browser açar)
-- Repo klonlu: `git clone https://github.com/hasi-elektronic/it-cockpit.git && cd it-cockpit`
+- Repo klonlu: `git clone https://github.com/hasi-elektronic/hasi-social-media.git && cd hasi-social-media`
 
 ---
 

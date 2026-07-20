@@ -3,4 +3,9 @@ node_modules/
 *.log
 .DS_Store
 .wrangler/
+**/.wrangler/
+.dev.vars
+.env
+.env.*
+!.env.example
 /agent/dist/

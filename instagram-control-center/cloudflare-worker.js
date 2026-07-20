@@ -33,6 +33,27 @@ async function hmac(secret, value) {
   return base64Url(new Uint8Array(signature));
 }
 
+function decodeBase64Url(value) {
+  const normalized = String(value || "").replaceAll("-", "+").replaceAll("_", "/");
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+  return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
+}
+
+async function verifyHmac(secret, value, signature) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    textBytes(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"]
+  );
+  try {
+    return crypto.subtle.verify("HMAC", key, decodeBase64Url(signature), textBytes(value));
+  } catch {
+    return false;
+  }
+}
+
 function readCookie(request, name) {
   const cookie = request.headers.get("Cookie") || "";
   return cookie
@@ -42,9 +63,11 @@ function readCookie(request, name) {
     ?.slice(name.length + 1);
 }
 
-async function createSession(email, env) {
+async function createSession(identity, env) {
   const payload = base64Url(textBytes(JSON.stringify({
-    email,
+    email: identity.email,
+    role: identity.role,
+    tenantId: identity.tenantId || null,
     exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS,
   })));
   const sig = await hmac(env.SESSION_SECRET, payload);
@@ -53,15 +76,19 @@ async function createSession(email, env) {
 
 async function verifySession(request, env) {
   const token = readCookie(request, SESSION_COOKIE);
-  if (!token || !token.includes(".")) return false;
+  if (!token || !token.includes(".")) return null;
   const [payload, sig] = token.split(".");
-  const expected = await hmac(env.SESSION_SECRET, payload);
-  if (sig !== expected) return false;
+  if (!env.SESSION_SECRET || !(await verifyHmac(env.SESSION_SECRET, payload, sig))) return null;
   try {
-    const json = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(payload.replaceAll("-", "+").replaceAll("_", "/")), (char) => char.charCodeAt(0))));
-    return json.exp > Math.floor(Date.now() / 1000);
+    const json = JSON.parse(new TextDecoder().decode(decodeBase64Url(payload)));
+    if (json.exp <= Math.floor(Date.now() / 1000)) return null;
+    if (json.role === "admin" && json.email) return { email: json.email, role: "admin", tenantId: null };
+    if (json.role === "customer" && json.email && json.tenantId) {
+      return { email: json.email, role: "customer", tenantId: slugify(json.tenantId) };
+    }
+    return null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -94,6 +121,34 @@ function isCustomerPagePath(pathname) {
   return pathname === "/hasi-elektronic" || pathname === "/kebyshop";
 }
 
+function tenantPath(tenantId) {
+  if (tenantId === "hasi-elektronic") return "/hasi-elektronic";
+  if (tenantId === "keby-shop") return "/kebyshop";
+  return `/kunde/${encodeURIComponent(tenantId)}`;
+}
+
+function tenantFromPath(pathname) {
+  if (pathname === "/hasi-elektronic") return "hasi-elektronic";
+  if (pathname === "/kebyshop") return "keby-shop";
+  const match = pathname.match(/^\/kunde\/([^/?#]+)/i);
+  return match ? slugify(decodeURIComponent(match[1])) : "";
+}
+
+function defaultTarget(identity) {
+  return identity?.role === "customer" ? tenantPath(identity.tenantId) : "/hasi-elektronic";
+}
+
+function authorizedTarget(identity, value) {
+  const target = safeRedirectTarget(value, defaultTarget(identity));
+  if (identity?.role === "admin") return target;
+  const targetTenant = tenantFromPath(new URL(target, "https://hasi.live").pathname);
+  return targetTenant === identity?.tenantId ? target : defaultTarget(identity);
+}
+
+function canAccessTenant(identity, tenantId) {
+  return identity?.role === "admin" || (identity?.role === "customer" && identity.tenantId === tenantId);
+}
+
 function safeRedirectTarget(value, fallback = "/hasi-elektronic") {
   const target = String(value || "").trim();
   if (!target || !target.startsWith("/") || target.startsWith("//")) return fallback;
@@ -108,7 +163,77 @@ function safeRedirectTarget(value, fallback = "/hasi-elektronic") {
 async function serveAsset(env, path, request) {
   const url = new URL(request.url);
   url.pathname = path;
-  return env.ASSETS.fetch(new Request(url, request));
+  return env.ASSETS.fetch(new Request(url, {
+    method: "GET",
+    headers: { Accept: request.headers.get("Accept") || "*/*" },
+  }));
+}
+
+async function passwordHash(password, salt) {
+  const key = await crypto.subtle.importKey("raw", textBytes(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: decodeBase64Url(salt), iterations: 210000 },
+    key,
+    256
+  );
+  return base64Url(new Uint8Array(bits));
+}
+
+function randomSalt() {
+  return base64Url(crypto.getRandomValues(new Uint8Array(16)));
+}
+
+async function portalUsers(env) {
+  if (!env.CUSTOMERS) return [];
+  const rows = await env.CUSTOMERS.get("portal-users", "json");
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function savePortalUsers(env, rows) {
+  if (!env.CUSTOMERS) throw new Error("CUSTOMERS KV binding fehlt");
+  await env.CUSTOMERS.put("portal-users", JSON.stringify(rows));
+}
+
+async function customerIdentity(env, email, password) {
+  const users = await portalUsers(env);
+  const user = users.find((row) => row.enabled !== false && String(row.email || "").toLowerCase() === email);
+  if (!user?.passwordHash || !user?.passwordSalt || !user?.tenantId) return null;
+  const actual = await passwordHash(password, user.passwordSalt);
+  if (actual !== user.passwordHash) return null;
+  return { email, role: "customer", tenantId: slugify(user.tenantId) };
+}
+
+async function upsertPortalUser(env, customer, input, existingCustomer = null) {
+  const portalInput = input.portal || input;
+  const loginEmail = String(portalInput.loginEmail ?? customer.portal?.loginEmail ?? "").trim().toLowerCase();
+  const temporaryPassword = String(portalInput.temporaryPassword || "");
+  const enabled = boolValue(portalInput.loginEnabled ?? customer.portal?.enabled);
+  const users = await portalUsers(env);
+  const existingIndex = users.findIndex((row) => row.tenantId === customer.id);
+  const existingUser = existingIndex >= 0 ? users[existingIndex] : null;
+
+  if (!enabled && !loginEmail && !existingUser) return;
+  if (enabled && !loginEmail) throw new Error("Portal-E-Mail fehlt");
+  if (temporaryPassword && temporaryPassword.length < 12) {
+    throw new Error("Das temporäre Passwort muss mindestens 12 Zeichen haben");
+  }
+  if (enabled && !temporaryPassword && !existingUser?.passwordHash) {
+    throw new Error("Für den ersten Portalzugang ist ein temporäres Passwort erforderlich");
+  }
+  const passwordSalt = temporaryPassword ? randomSalt() : existingUser?.passwordSalt;
+  const nextUser = {
+    email: loginEmail || existingUser?.email || existingCustomer?.portal?.loginEmail || "",
+    tenantId: customer.id,
+    role: "customer",
+    enabled,
+    passwordSalt,
+    passwordHash: temporaryPassword ? await passwordHash(temporaryPassword, passwordSalt) : existingUser?.passwordHash,
+    updatedAt: new Date().toISOString(),
+  };
+  const nextUsers = existingIndex >= 0
+    ? users.map((row, index) => index === existingIndex ? nextUser : row)
+    : [...users, nextUser];
+  await savePortalUsers(env, nextUsers);
 }
 
 async function handleLogin(request, env) {
@@ -124,8 +249,12 @@ async function handleLogin(request, env) {
   const hash = await sha256Hex(`${salt}:${password}`);
   const hashMatches = env.COCKPIT_PASSWORD_HASH && hash === env.COCKPIT_PASSWORD_HASH;
   const secretMatches = env.COCKPIT_PASSWORD && password === env.COCKPIT_PASSWORD;
-  const redirectTo = safeRedirectTarget(body.next, "/hasi-elektronic");
-  if (!expectedEmail || email !== expectedEmail || (!hashMatches && !secretMatches)) {
+  const adminMatches = expectedEmail && email === expectedEmail && (hashMatches || secretMatches);
+  const identity = adminMatches
+    ? { email, role: "admin", tenantId: null }
+    : await customerIdentity(env, email, password);
+  const redirectTo = authorizedTarget(identity, body.next);
+  if (!identity) {
     if (isFormPost) {
       return new Response(null, {
         status: 303,
@@ -137,7 +266,7 @@ async function handleLogin(request, env) {
     }
     return json({ ok: false }, 401);
   }
-  const session = await createSession(email, env);
+  const session = await createSession(identity, env);
   const cookie = `${SESSION_COOKIE}=${session}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_SECONDS}`;
   if (isFormPost) {
     return new Response(null, {
@@ -148,7 +277,7 @@ async function handleLogin(request, env) {
       }),
     });
   }
-  return new Response(JSON.stringify({ ok: true, redirectTo }), {
+  return new Response(JSON.stringify({ ok: true, redirectTo, role: identity.role }), {
     headers: noStoreHeaders({
       "Content-Type": "application/json; charset=utf-8",
       "Set-Cookie": cookie,
@@ -164,16 +293,27 @@ function manifestSlug(file) {
   return String(file || "").replace(/\.manifest\.json$/, "").replace(/\.(reel|story)$/, "");
 }
 
+function matchesManifest(entry, file, slug) {
+  return entry?.manifest ? entry.manifest === file : entry?.slug === slug;
+}
+
 function safePublishFile(value) {
   return String(value || "").replace(/[^a-zA-Z0-9._-]/g, "");
 }
 
-async function activityLog(env, request) {
+async function activityLog(env, request, tenantId = "hasi-elektronic") {
   const fallbackResponse = await serveAsset(env, "/data/status.json", request);
   const snapshot = fallbackResponse.ok ? await fallbackResponse.json().catch(() => ({})) : {};
-  const staticLog = Array.isArray(snapshot.log) ? snapshot.log : [];
-  const storedLog = env.CUSTOMERS ? await env.CUSTOMERS.get("activity-log", "json") : [];
-  const combined = [...(Array.isArray(storedLog) ? storedLog : []), ...staticLog];
+  const staticLog = tenantId === "hasi-elektronic" && Array.isArray(snapshot.log) ? snapshot.log : [];
+  const storedLog = env.CUSTOMERS ? await env.CUSTOMERS.get(`activity-log:${tenantId}`, "json") : [];
+  const legacyStoredLog = tenantId === "hasi-elektronic" && env.CUSTOMERS
+    ? await env.CUSTOMERS.get("activity-log", "json")
+    : [];
+  const combined = [
+    ...(Array.isArray(storedLog) ? storedLog : []),
+    ...(Array.isArray(legacyStoredLog) ? legacyStoredLog : []),
+    ...staticLog,
+  ];
   const seen = new Set();
   return combined.filter((entry) => {
     const key = `${entry.action || ""}:${entry.manifest || ""}:${entry.instagramId || ""}:${entry.time || ""}`;
@@ -183,11 +323,11 @@ async function activityLog(env, request) {
   }).sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime());
 }
 
-async function appendActivityLog(env, request, entry) {
+async function appendActivityLog(env, request, entry, tenantId = "hasi-elektronic") {
   if (!env.CUSTOMERS) throw new Error("CUSTOMERS KV binding fehlt");
-  const log = await activityLog(env, request);
-  const next = [entry, ...log].slice(0, 100);
-  await env.CUSTOMERS.put("activity-log", JSON.stringify(next, null, 2));
+  const log = await activityLog(env, request, tenantId);
+  const next = [{ ...entry, tenantId }, ...log].slice(0, 100);
+  await env.CUSTOMERS.put(`activity-log:${tenantId}`, JSON.stringify(next, null, 2));
 }
 
 function applyActivityLog(snapshot, log) {
@@ -195,11 +335,11 @@ function applyActivityLog(snapshot, log) {
   snapshot.manifests = items.map((item) => {
     const published = log.find((entry) => {
       if (entry.status !== "published" && !entry.instagramId) return false;
-      return entry.manifest === item.file || entry.slug === item.slug || entry.slug === manifestSlug(item.file);
+      return matchesManifest(entry, item.file, item.slug || manifestSlug(item.file));
     });
     const approved = log.find((entry) => {
       if (entry.status !== "approved") return false;
-      return entry.manifest === item.file || entry.slug === item.slug || entry.slug === manifestSlug(item.file);
+      return matchesManifest(entry, item.file, item.slug || manifestSlug(item.file));
     });
     return {
       ...item,
@@ -214,12 +354,37 @@ function applyActivityLog(snapshot, log) {
   return snapshot;
 }
 
-async function status(env, request) {
+function requestedTenant(request, identity) {
+  if (identity?.role === "customer") return identity.tenantId;
+  return slugify(new URL(request.url).searchParams.get("tenant") || "hasi-elektronic") || "hasi-elektronic";
+}
+
+async function status(env, request, identity) {
+  const tenantId = requestedTenant(request, identity);
+  if (!canAccessTenant(identity, tenantId)) return json({ error: "Forbidden" }, 403);
   const response = await serveAsset(env, "/data/status.json", request);
   if (!response.ok) return json({ error: "Status snapshot not found" }, 404);
   const snapshot = await response.json();
-  snapshot.customers = await customers(env, request);
-  return json(applyActivityLog(snapshot, await activityLog(env, request)));
+  const allCustomers = await customers(env, request);
+  const customer = allCustomers.find((row) => row.id === tenantId);
+  if (!customer) return json({ error: "Kunde nicht gefunden" }, 404);
+  snapshot.customers = identity.role === "admin" ? allCustomers : [customer];
+  snapshot.session = { email: identity.email, role: identity.role, tenantId };
+  if (tenantId !== "hasi-elektronic") {
+    snapshot.customer = customer;
+    snapshot.manifests = [];
+    snapshot.plan = [];
+    snapshot.log = [];
+  }
+  try {
+    const factoryUrl = env.CONTENT_FACTORY_URL || "https://hasi-content-factory.hguencavdi.workers.dev";
+    const factoryResponse = await fetch(`${factoryUrl}/api/tenants/${encodeURIComponent(tenantId)}/dashboard`, { headers: { Accept: "application/json" } });
+    if (factoryResponse.ok) snapshot.cloudFactory = await factoryResponse.json();
+    else snapshot.cloudFactory = { error: `Content Factory HTTP ${factoryResponse.status}` };
+  } catch (error) {
+    snapshot.cloudFactory = { error: String(error?.message || error) };
+  }
+  return json(applyActivityLog(snapshot, await activityLog(env, request, tenantId)));
 }
 
 function slugify(value) {
@@ -263,9 +428,9 @@ function normalizeOnboarding(input = {}, existing = {}) {
 
 function normalizeCadence(input = {}, existing = {}) {
   return {
-    carousel: String(input.carouselTime || input.carousel || existing.carousel || "08:00").trim(),
-    reel: String(input.reelTime || input.reel || existing.reel || "08:30").trim(),
-    story: String(input.storyTime || input.story || existing.story || "09:00").trim(),
+    carousel: String(input.carouselTime || input.carousel || existing.carousel || "12:30").trim(),
+    reel: String(input.reelTime || input.reel || existing.reel || "19:30").trim(),
+    story: String(input.storyTime || input.story || existing.story || "08:00").trim(),
   };
 }
 
@@ -300,6 +465,16 @@ function normalizeCustomer(input, existing = null) {
     topics: parseTopics(input.topics),
     cadence: normalizeCadence(cadenceInput, existing?.cadence),
     positioning: String(input.positioning || "").trim(),
+    portal: {
+      loginEmail: String(input.loginEmail || input.portal?.loginEmail || existing?.portal?.loginEmail || "").trim().toLowerCase(),
+      enabled: boolValue(input.loginEnabled ?? input.portal?.enabled ?? existing?.portal?.enabled),
+    },
+    factory: {
+      publishMode: String(input.factoryPublishMode || input.factory?.publishMode || existing?.factory?.publishMode || (id === "hasi-elektronic" ? "automatic" : onboardingInput.publishPermission === "direct" ? "automatic" : onboardingInput.publishPermission === "approval" ? "approval" : "disabled")).trim(),
+      userRef: String(input.instagramUserRef || input.factory?.userRef || existing?.factory?.userRef || (id === "hasi-elektronic" ? "IG_USER_ID" : "")).trim().toUpperCase(),
+      secretRef: String(input.instagramSecretRef || input.factory?.secretRef || existing?.factory?.secretRef || (id === "hasi-elektronic" ? "IG_ACCESS_TOKEN" : "")).trim().toUpperCase(),
+      graphVersion: String(input.graphVersion || input.factory?.graphVersion || existing?.factory?.graphVersion || "v25.0").trim(),
+    },
     onboarding: normalizeOnboarding(onboardingInput, existing?.onboarding),
     createdAt: existing?.createdAt || new Date().toISOString(),
   };
@@ -325,13 +500,159 @@ async function saveCustomers(env, rows) {
   await env.CUSTOMERS.put("customers", JSON.stringify(rows, null, 2));
 }
 
+function addMinutes(time, minutes) {
+  const [hour, minute] = String(time || "00:00").split(":").map(Number);
+  const total = ((hour * 60 + minute + minutes) % 1440 + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+
+async function syncFactoryTenant(env, customer) {
+  if (!env.CONTENT_FACTORY_SECRET) return { skipped: true };
+  const factoryUrl = env.CONTENT_FACTORY_URL || "https://hasi-content-factory.hguencavdi.workers.dev";
+  const payload = {
+    slug: customer.id,
+    name: customer.company || customer.name,
+    instagramHandle: customer.instagram,
+    active: customer.status !== "inactive",
+    brand: customer.brand,
+    strategy: {
+      carousel: { info: 70, "problem-solution": 20, promotion: 10 },
+      reel: { info: 60, "problem-solution": 25, promotion: 15 },
+      topics: customer.topics,
+      positioning: customer.positioning,
+      language: customer.language,
+    },
+    schedule: {
+      storyMorning: customer.cadence.story,
+      carousel: customer.cadence.carousel,
+      reel: customer.cadence.reel,
+      storyEvening: addMinutes(customer.cadence.reel, 15),
+    },
+    publishMode: customer.factory.publishMode,
+    userRef: customer.factory.userRef,
+    secretRef: customer.factory.secretRef,
+    version: customer.factory.graphVersion,
+  };
+  const response = await fetch(`${factoryUrl}/api/admin/tenants/${encodeURIComponent(customer.id)}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${env.CONTENT_FACTORY_SECRET}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(`Content Factory: ${result.error || `HTTP ${response.status}`}`);
+  return result;
+}
+
+async function factoryRequest(env, path, options = {}) {
+  if (!env.CONTENT_FACTORY_SECRET) throw new Error("Content Factory Service-Secret fehlt");
+  const factoryUrl = env.CONTENT_FACTORY_URL || "https://hasi-content-factory.hguencavdi.workers.dev";
+  const response = await fetch(`${factoryUrl}${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${env.CONTENT_FACTORY_SECRET}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error || `Content Factory HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+function editorialTenant(identity, input = {}) {
+  return identity.role === "customer" ? identity.tenantId : slugify(input.tenantId || "hasi-elektronic");
+}
+
+async function proposeEditorialWeek(request, env, identity, weekStart) {
+  const input = await request.json().catch(() => ({}));
+  const tenantId = editorialTenant(identity, input);
+  if (!tenantId || !canAccessTenant(identity, tenantId)) return json({ error: "Forbidden" }, 403);
+  try {
+    return json(await factoryRequest(env, `/api/admin/tenants/${encodeURIComponent(tenantId)}/editorial-weeks/${weekStart}/propose`, { method: "POST", body: "{}" }), 201);
+  } catch (error) {
+    return json({ error: error.message }, error.status || 500);
+  }
+}
+
+async function updateEditorialItem(request, env, identity, weekStart, itemId, regenerate = false) {
+  const input = await request.json().catch(() => ({}));
+  const tenantId = editorialTenant(identity, input);
+  if (!tenantId || !canAccessTenant(identity, tenantId)) return json({ error: "Forbidden" }, 403);
+  const suffix = regenerate ? "/regenerate" : "";
+  try {
+    return json(await factoryRequest(env, `/api/admin/tenants/${encodeURIComponent(tenantId)}/editorial-weeks/${weekStart}/items/${encodeURIComponent(itemId)}${suffix}`, {
+      method: regenerate ? "POST" : "PATCH",
+      body: JSON.stringify(regenerate ? {} : input),
+    }));
+  } catch (error) {
+    return json({ error: error.message }, error.status || 500);
+  }
+}
+
+async function approveEditorialWeekFromPortal(request, env, identity, weekStart) {
+  const input = await request.json().catch(() => ({}));
+  const tenantId = editorialTenant(identity, input);
+  if (!tenantId || !canAccessTenant(identity, tenantId)) return json({ error: "Forbidden" }, 403);
+  try {
+    return json(await factoryRequest(env, `/api/admin/tenants/${encodeURIComponent(tenantId)}/editorial-weeks/${weekStart}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ approvedBy: identity.email }),
+    }), 202);
+  } catch (error) {
+    return json({ error: error.message }, error.status || 500);
+  }
+}
+
+async function approveFactoryAsset(request, env, identity, assetId) {
+  const input = await request.json().catch(() => ({}));
+  const tenantId = identity.role === "customer" ? identity.tenantId : slugify(input.tenantId || "hasi-elektronic");
+  if (!tenantId || !canAccessTenant(identity, tenantId)) return json({ error: "Forbidden" }, 403);
+  const factoryUrl = env.CONTENT_FACTORY_URL || "https://hasi-content-factory.hguencavdi.workers.dev";
+  const dashboardResponse = await fetch(`${factoryUrl}/api/tenants/${encodeURIComponent(tenantId)}/dashboard`, { headers: { Accept: "application/json" } });
+  const dashboard = await dashboardResponse.json().catch(() => ({}));
+  if (!dashboardResponse.ok) return json({ error: dashboard.error || `Content Factory HTTP ${dashboardResponse.status}` }, dashboardResponse.status);
+  const asset = (dashboard.assets || []).find((entry) => entry.id === assetId);
+  if (!asset) return json({ error: "Inhalt gehört nicht zu diesem Kunden" }, 404);
+  const approval = await factoryRequest(env, `/api/assets/${encodeURIComponent(assetId)}/approval`, {
+    method: "POST",
+    body: JSON.stringify({ approved: true, approvedBy: identity.email }),
+  });
+  const publish = input.publishNow === false ? null : await factoryRequest(env, `/api/assets/${encodeURIComponent(assetId)}/publish`, { method: "POST", body: "{}" });
+  await appendActivityLog(env, request, {
+    action: "factory-approval",
+    status: publish?.status || approval.approvalStatus,
+    manifest: `cloud-${assetId}`,
+    time: new Date().toISOString(),
+  }, tenantId);
+  return json({ ok: true, approval, publish });
+}
+
+async function factoryAssetPublishStatus(request, env, identity, assetId) {
+  const input = await request.json().catch(() => ({}));
+  const tenantId = identity.role === "customer" ? identity.tenantId : slugify(input.tenantId || "hasi-elektronic");
+  if (!tenantId || !canAccessTenant(identity, tenantId)) return json({ error: "Forbidden" }, 403);
+  const factoryUrl = env.CONTENT_FACTORY_URL || "https://hasi-content-factory.hguencavdi.workers.dev";
+  const dashboardResponse = await fetch(`${factoryUrl}/api/tenants/${encodeURIComponent(tenantId)}/dashboard`, { headers: { Accept: "application/json" } });
+  const dashboard = await dashboardResponse.json().catch(() => ({}));
+  if (!dashboardResponse.ok) return json({ error: dashboard.error || `Content Factory HTTP ${dashboardResponse.status}` }, dashboardResponse.status);
+  if (!(dashboard.assets || []).some((entry) => entry.id === assetId)) return json({ error: "Inhalt gehört nicht zu diesem Kunden" }, 404);
+  return json(await factoryRequest(env, `/api/assets/${encodeURIComponent(assetId)}/publish-status`, { method: "POST", body: "{}" }));
+}
+
 async function addCustomer(request, env) {
-  const customer = normalizeCustomer(await request.json());
+  const input = await request.json();
+  const customer = normalizeCustomer(input);
   const rows = await customers(env, request);
   if (rows.some((row) => row.id === customer.id)) {
     return json({ error: "Kunde existiert bereits" }, 409);
   }
   const nextRows = [customer, ...rows];
+  await syncFactoryTenant(env, customer);
+  await upsertPortalUser(env, customer, input);
   await saveCustomers(env, nextRows);
   return json({ customer }, 201);
 }
@@ -341,8 +662,10 @@ async function updateCustomer(request, env, id) {
   const rows = await customers(env, request);
   const index = rows.findIndex((row) => row.id === id);
   if (index === -1) return json({ error: "Kunde nicht gefunden" }, 404);
-  const customer = normalizeCustomer({ ...rows[index], ...input }, rows[index]);
+  const customer = normalizeCustomer(input, rows[index]);
   const nextRows = rows.map((row, rowIndex) => rowIndex === index ? customer : row);
+  await syncFactoryTenant(env, customer);
+  await upsertPortalUser(env, customer, input, rows[index]);
   await saveCustomers(env, nextRows);
   return json({ customer });
 }
@@ -458,6 +781,23 @@ async function publishStory(env, item) {
   return graphPost(env, `/${graphConfig(env).igUserId}/media_publish`, { creation_id: container.id });
 }
 
+async function createVideoContainer(env, item, type) {
+  const mediaUrl = item.urls[0];
+  if (type === "reel") {
+    return graphPost(env, `/${graphConfig(env).igUserId}/media`, {
+      media_type: "REELS",
+      video_url: mediaUrl,
+      caption: item.caption || "",
+      share_to_feed: "true",
+    });
+  }
+  const isVideo = String(item.checks?.[0]?.type || "").includes("video/mp4") || /\.mp4(?:$|\?)/i.test(mediaUrl);
+  return graphPost(env, `/${graphConfig(env).igUserId}/media`, {
+    media_type: "STORIES",
+    ...(isVideo ? { video_url: mediaUrl } : { image_url: mediaUrl }),
+  });
+}
+
 async function approveFromCloud(request, env, type, file) {
   if (!["carousel", "reel", "story"].includes(type)) {
     return json({ ok: false, error: "Unbekannter Inhaltstyp." }, 400);
@@ -468,7 +808,7 @@ async function approveFromCloud(request, env, type, file) {
   if (!item.ready) return json({ ok: false, error: "Der Inhalt ist noch nicht vollständig geprüft." }, 409);
 
   const log = await activityLog(env, request);
-  const existing = log.find((entry) => entry.status === "approved" && (entry.manifest === safeFile || entry.slug === item.slug));
+  const existing = log.find((entry) => entry.status === "approved" && matchesManifest(entry, safeFile, item.slug));
   if (existing) return json({ ok: true, skipped: true, entry: existing, message: "Bereits freigegeben." });
 
   const entry = {
@@ -495,22 +835,49 @@ async function publishFromCloud(request, env, type, file) {
   if (!item || item.type !== type) return json({ ok: false, error: "Manifest nicht gefunden oder falscher Typ." }, 404);
 
   const log = await activityLog(env, request);
-  const already = log.find((entry) => (entry.status === "published" || entry.instagramId) && (entry.manifest === safeFile || entry.slug === item.slug));
+  const already = log.find((entry) => (entry.status === "published" || entry.instagramId) && matchesManifest(entry, safeFile, item.slug));
   if (already) {
     return json({ ok: true, skipped: true, instagramId: already.instagramId || "", message: "Schon veröffentlicht." });
   }
-  const approved = log.find((entry) => entry.status === "approved" && (entry.manifest === safeFile || entry.slug === item.slug));
-  if (!approved) {
-    return json({ ok: false, error: "Vor der Veröffentlichung ist eine Freigabe erforderlich." }, 409);
+  const activeProcess = log.find((entry) => entry.status === "processing" && entry.containerId && matchesManifest(entry, safeFile, item.slug));
+  const laterFailure = activeProcess && log.find((entry) => entry.status === "failed" && matchesManifest(entry, safeFile, item.slug) && new Date(entry.time) > new Date(activeProcess.time));
+  if (activeProcess && !laterFailure && (type === "reel" || type === "story")) {
+    return json({ ok: true, pending: true, containerId: activeProcess.containerId, message: "Instagram verarbeitet das Video noch." }, 202);
   }
+  const approved = log.find((entry) => entry.status === "approved" && matchesManifest(entry, safeFile, item.slug));
 
   try {
     await verifyPublishItem(item);
-    const published = type === "carousel"
-      ? await publishCarousel(env, item)
-      : type === "reel"
-        ? await publishReel(env, item)
-        : await publishStory(env, item);
+    if (!approved) {
+      await appendActivityLog(env, request, {
+        time: new Date().toISOString(),
+        action: "approve-content",
+        status: "approved",
+        type,
+        topic: item.slug || manifestSlug(safeFile),
+        slug: item.slug || manifestSlug(safeFile),
+        manifest: safeFile,
+        instagramId: "",
+        note: "Freigabe zusammen mit der Veröffentlichung im Kundenportal bestätigt.",
+      });
+    }
+    if (type === "reel" || type === "story") {
+      const container = await createVideoContainer(env, item, type);
+      await appendActivityLog(env, request, {
+        time: new Date().toISOString(),
+        action: `process-${type}`,
+        status: "processing",
+        type,
+        topic: item.title || item.slug || manifestSlug(safeFile),
+        slug: item.slug || manifestSlug(safeFile),
+        manifest: safeFile,
+        containerId: container.id,
+        instagramId: "",
+        note: "Instagram verarbeitet den Mediencontainer.",
+      });
+      return json({ ok: true, pending: true, containerId: container.id }, 202);
+    }
+    const published = await publishCarousel(env, item);
     const entry = {
       time: new Date().toISOString(),
       action: `publish-${type}`,
@@ -520,7 +887,9 @@ async function publishFromCloud(request, env, type, file) {
       slug: item.slug || manifestSlug(safeFile),
       manifest: safeFile,
       instagramId: published.id || "",
-      note: "Nach Kundenfreigabe über Hasi Social Media veröffentlicht.",
+      note: approved
+        ? "Nach Kundenfreigabe über Hasi Social Media veröffentlicht."
+        : "Im Kundenportal freigegeben und direkt über Hasi Social Media veröffentlicht.",
     };
     await appendActivityLog(env, request, entry);
     return json({ ok: true, instagramId: published.id || "", entry });
@@ -540,8 +909,50 @@ async function publishFromCloud(request, env, type, file) {
   }
 }
 
-export default {
-  async fetch(request, env) {
+async function completeVideoPublish(request, env, type, file, containerId) {
+  if (!["reel", "story"].includes(type)) return json({ ok: false, error: "Unbekannter Video-Typ." }, 400);
+  const safeFile = safePublishFile(file);
+  const safeContainerId = String(containerId || "").replace(/[^0-9]/g, "");
+  if (!safeContainerId) return json({ ok: false, error: "Container-ID fehlt." }, 400);
+  const item = await findManifest(env, request, safeFile);
+  if (!item || item.type !== type) return json({ ok: false, error: "Manifest nicht gefunden oder falscher Typ." }, 404);
+  const log = await activityLog(env, request);
+  const already = log.find((entry) => (entry.status === "published" || entry.instagramId) && matchesManifest(entry, safeFile, item.slug));
+  if (already) return json({ ok: true, pending: false, skipped: true, instagramId: already.instagramId || "" });
+  const processEntry = log.find((entry) => entry.status === "processing" && entry.containerId === safeContainerId && matchesManifest(entry, safeFile, item.slug));
+  if (!processEntry) return json({ ok: false, error: "Kein aktiver Veröffentlichungsvorgang gefunden." }, 409);
+  try {
+    const container = await graphGet(env, `/${safeContainerId}`, { fields: "status_code,status" });
+    if (container.status_code === "ERROR") throw new Error(container.status || "Instagram konnte das Video nicht verarbeiten.");
+    if (container.status_code !== "FINISHED") {
+      return json({ ok: true, pending: true, containerId: safeContainerId, status: container.status_code || "IN_PROGRESS" }, 202);
+    }
+    const published = await graphPost(env, `/${graphConfig(env).igUserId}/media_publish`, { creation_id: safeContainerId });
+    const entry = {
+      time: new Date().toISOString(),
+      action: `publish-${type}`,
+      status: "published",
+      type,
+      topic: item.title || item.slug || manifestSlug(safeFile),
+      slug: item.slug || manifestSlug(safeFile),
+      manifest: safeFile,
+      containerId: safeContainerId,
+      instagramId: published.id || "",
+      note: "Im Kundenportal freigegeben und über Hasi Social Media veröffentlicht.",
+    };
+    await appendActivityLog(env, request, entry);
+    return json({ ok: true, pending: false, instagramId: published.id || "", entry });
+  } catch (error) {
+    await appendActivityLog(env, request, {
+      time: new Date().toISOString(), action: `publish-${type}`, status: "failed", type,
+      topic: item.title || item.slug || manifestSlug(safeFile), slug: item.slug || manifestSlug(safeFile),
+      manifest: safeFile, containerId: safeContainerId, instagramId: "", note: String(error.message || error).slice(0, 500),
+    }).catch(() => {});
+    return json({ ok: false, error: String(error.message || error) }, 500);
+  }
+}
+
+async function handleRequest(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/" || url.pathname === "/index.html" || url.pathname === "/home") {
       return new Response(HOME_HTML, {
@@ -558,8 +969,9 @@ export default {
       });
     }
     if (url.pathname === "/login" || url.pathname === "/login.html") {
-      if (await verifySession(request, env)) {
-        return redirectNoStore(`${url.origin}${safeRedirectTarget(url.searchParams.get("next"), "/hasi-elektronic")}`);
+      const identity = await verifySession(request, env);
+      if (identity) {
+        return redirectNoStore(`${url.origin}${authorizedTarget(identity, url.searchParams.get("next"))}`);
       }
       return new Response(LOGIN_HTML, {
         headers: noStoreHeaders({
@@ -583,43 +995,94 @@ export default {
       });
     }
 
-    if (!(await verifySession(request, env))) {
+    const identity = await verifySession(request, env);
+    if (!identity) {
       if (url.pathname.startsWith("/api/")) return json({ error: "Unauthorized" }, 401);
       const next = safeRedirectTarget(`${url.pathname}${url.search}`, "/hasi-elektronic");
       return redirectNoStore(`${url.origin}/login?next=${encodeURIComponent(next)}`);
     }
 
     if (url.pathname === "/admin" || url.pathname === "/admin.html") {
+      if (identity.role !== "admin") return redirectNoStore(`${url.origin}${defaultTarget(identity)}`, 303);
       return new Response(ADMIN_HTML, {
         headers: noStoreHeaders({ "Content-Type": "text/html; charset=utf-8" }),
       });
     }
-    if (url.pathname === "/app" || url.pathname === "/app.html" || url.pathname.startsWith("/kunde/") || isCustomerPagePath(url.pathname)) {
+    if (url.pathname === "/app" || url.pathname === "/app.html") {
+      return redirectNoStore(`${url.origin}${defaultTarget(identity)}`, 303);
+    }
+    if (url.pathname.startsWith("/kunde/") || isCustomerPagePath(url.pathname)) {
+      const tenantId = tenantFromPath(url.pathname);
+      if (!tenantId) return json({ error: "Kunde nicht gefunden" }, 404);
+      if (!canAccessTenant(identity, tenantId)) return redirectNoStore(`${url.origin}${defaultTarget(identity)}`, 303);
       return new Response(APP_HTML, {
         headers: noStoreHeaders({
           "Content-Type": "text/html; charset=utf-8",
         }),
       });
     }
-    if (url.pathname === "/api/status") return status(env, request);
+    if (url.pathname === "/api/session") {
+      return json({ email: identity.email, role: identity.role, tenantId: identity.tenantId });
+    }
+    if (url.pathname === "/api/status") return status(env, request, identity);
+    const editorialProposeMatch = url.pathname.match(/^\/api\/editorial-weeks\/(\d{4}-\d{2}-\d{2})\/propose$/);
+    if (editorialProposeMatch && request.method === "POST") return proposeEditorialWeek(request, env, identity, editorialProposeMatch[1]);
+    const editorialApproveMatch = url.pathname.match(/^\/api\/editorial-weeks\/(\d{4}-\d{2}-\d{2})\/approve$/);
+    if (editorialApproveMatch && request.method === "POST") return approveEditorialWeekFromPortal(request, env, identity, editorialApproveMatch[1]);
+    const editorialRegenerateMatch = url.pathname.match(/^\/api\/editorial-weeks\/(\d{4}-\d{2}-\d{2})\/items\/([^/]+)\/regenerate$/);
+    if (editorialRegenerateMatch && request.method === "POST") return updateEditorialItem(request, env, identity, editorialRegenerateMatch[1], decodeURIComponent(editorialRegenerateMatch[2]), true);
+    const editorialItemMatch = url.pathname.match(/^\/api\/editorial-weeks\/(\d{4}-\d{2}-\d{2})\/items\/([^/]+)$/);
+    if (editorialItemMatch && request.method === "PATCH") return updateEditorialItem(request, env, identity, editorialItemMatch[1], decodeURIComponent(editorialItemMatch[2]));
     if (url.pathname === "/api/customers" && request.method === "GET") {
-      return json({ customers: await customers(env, request) });
+      const rows = await customers(env, request);
+      return json({ customers: identity.role === "admin" ? rows : rows.filter((row) => row.id === identity.tenantId) });
     }
     if (url.pathname === "/api/customers" && request.method === "POST") {
+      if (identity.role !== "admin") return json({ error: "Forbidden" }, 403);
       return addCustomer(request, env);
     }
     if (url.pathname.startsWith("/api/customers/") && request.method === "PUT") {
+      if (identity.role !== "admin") return json({ error: "Forbidden" }, 403);
       const id = decodeURIComponent(url.pathname.replace("/api/customers/", ""));
       return updateCustomer(request, env, id);
     }
     if (url.pathname.startsWith("/api/publish/") && request.method === "POST") {
+      if (identity.role !== "admin" && identity.tenantId !== "hasi-elektronic") return json({ error: "Für diesen Kunden ist noch kein Instagram-Konto verbunden." }, 403);
       const [, , , type, ...fileParts] = url.pathname.split("/");
       return publishFromCloud(request, env, type, decodeURIComponent(fileParts.join("/") || ""));
     }
+    if (url.pathname.startsWith("/api/publish-status/") && request.method === "POST") {
+      if (identity.role !== "admin" && identity.tenantId !== "hasi-elektronic") return json({ error: "Forbidden" }, 403);
+      const [, , , type, file, containerId] = url.pathname.split("/");
+      return completeVideoPublish(request, env, type, decodeURIComponent(file || ""), decodeURIComponent(containerId || ""));
+    }
     if (url.pathname.startsWith("/api/approve/") && request.method === "POST") {
+      if (identity.role !== "admin" && identity.tenantId !== "hasi-elektronic") return json({ error: "Für diesen Kunden ist die Freigabe noch nicht eingerichtet." }, 403);
       const [, , , type, ...fileParts] = url.pathname.split("/");
       return approveFromCloud(request, env, type, decodeURIComponent(fileParts.join("/") || ""));
     }
-    return env.ASSETS.fetch(request);
+    const factoryApprovalMatch = url.pathname.match(/^\/api\/factory-assets\/([^/]+)\/approve$/);
+    if (factoryApprovalMatch && request.method === "POST") {
+      return approveFactoryAsset(request, env, identity, decodeURIComponent(factoryApprovalMatch[1]));
+    }
+    const factoryStatusMatch = url.pathname.match(/^\/api\/factory-assets\/([^/]+)\/publish-status$/);
+    if (factoryStatusMatch && request.method === "POST") {
+      return factoryAssetPublishStatus(request, env, identity, decodeURIComponent(factoryStatusMatch[1]));
+    }
+  return env.ASSETS.fetch(request);
+}
+
+export default {
+  async fetch(request, env) {
+    try {
+      return await handleRequest(request, env);
+    } catch (error) {
+      console.error("Unhandled Worker error", error);
+      if (new URL(request.url).pathname.startsWith("/api/")) {
+        const status = Number(error?.status);
+        return json({ ok: false, error: `Worker-Fehler: ${String(error.message || error)}` }, status >= 400 && status <= 599 ? status : 500);
+      }
+      return new Response("Interner Fehler", { status: 500 });
+    }
   },
 };

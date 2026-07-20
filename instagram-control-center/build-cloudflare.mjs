@@ -1,7 +1,7 @@
 import { mkdir, readFile, readdir, rm, stat, writeFile, copyFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
-const root = "/Users/hguencavdi/Desktop/it-cockpit";
+const root = "/Users/hguencavdi/Desktop/hasi-social-media";
 const appRoot = join(root, "instagram-control-center");
 const publicRoot = join(appRoot, "public");
 const toolsRoot = join(root, "instagram-karussells", "tools");
@@ -40,6 +40,10 @@ function classifyManifest(file, manifest) {
   return "carousel";
 }
 
+function matchesManifest(entry, file, slug) {
+  return entry?.manifest ? entry.manifest === file : entry?.slug === slug;
+}
+
 async function checkUrl(url) {
   if (!url) return { ok: false, status: 0, type: "" };
   try {
@@ -70,17 +74,19 @@ async function manifests(log) {
     const slug = file.replace(/\.manifest\.json$/, "").replace(/\.(reel|story)$/, "");
     const published = log.find((entry) => {
       if (entry.status !== "published" && !entry.instagramId) return false;
-      return entry.manifest === file || entry.slug === slug;
+      return matchesManifest(entry, file, slug);
     });
     const approved = log.find((entry) => {
       if (entry.status !== "approved") return false;
-      return entry.manifest === file || entry.slug === slug;
+      return matchesManifest(entry, file, slug);
     });
+    const activity = log.find((entry) => matchesManifest(entry, file, slug) && entry.topic);
     items.push({
       file,
       type,
       path: fullPath,
       slug,
+      title: manifest.title || activity?.topic || "",
       caption: manifest.caption || "",
       urlCount: urls.length,
       urls,
@@ -105,12 +111,14 @@ function nextPlan(plan) {
   return Array.from({ length: 14 }).map((_, index) => {
     const date = new Date(now);
     date.setDate(now.getDate() + index);
+    const schedule = plan.weeklySchedule?.[String(date.getDay())] || {};
     return {
       date: date.toISOString().slice(0, 10),
       topic: topics[index % topics.length] || "Web-App für lokale Firmen",
-      carousel: plan.cadence?.carousel || "08:00",
-      reel: plan.cadence?.reel || "08:30",
-      story: plan.cadence?.story || "09:00",
+      storyMorning: schedule.storyMorning || "08:00",
+      carousel: schedule.carousel || "12:30",
+      reel: schedule.reel || "19:30",
+      storyEvening: schedule.storyEvening || "19:45",
     };
   });
 }
@@ -129,8 +137,10 @@ const status = {
   },
   manifests: await manifests(log),
   automations: [
-    { id: "hasi-social-media-tagesproduktion", name: "Hasi Social Media Tagesproduktion", status: "ACTIVE", schedule: "08:00 Karussell + Reel + Story" },
-    { id: "hasi-social-media-tageskontrolle", name: "Hasi Social Media Tageskontrolle", status: "ACTIVE", schedule: "09:15 Kontrolle / fehlende Inhalte nachholen" },
+    { id: "hasi-social-media-tagesproduktion", name: "Hasi Social Media Tagesproduktion", status: "ACTIVE", schedule: "06:30 Vier Inhalte vorbereiten" },
+    { id: "hasi-social-media-publish-dispatcher", name: "Hasi Social Media Publish Dispatcher", status: "ACTIVE", schedule: "Alle 15 Minuten fällige Inhalte veröffentlichen" },
+    { id: "hasi-social-media-tageskontrolle", name: "Hasi Social Media Tageskontrolle", status: "ACTIVE", schedule: "07:15 Produktionskontrolle" },
+    { id: "hasi-social-media-tagesabschluss", name: "Hasi Social Media Tagesabschluss", status: "ACTIVE", schedule: "20:45 Tagesabschluss" },
   ],
   plan: nextPlan(plan),
   log: log.slice(0, 50),

@@ -20,7 +20,7 @@ https://hasi.live
 Build und Deploy:
 
 ```bash
-cd /Users/hguencavdi/Desktop/it-cockpit/instagram-control-center
+cd /Users/hguencavdi/Desktop/hasi-social-media/instagram-control-center
 node build-cloudflare.mjs
 wrangler pages deploy dist --project-name hasi-content-cockpit --commit-dirty=true
 ```
@@ -38,7 +38,7 @@ Wichtig: Secret-Werte werden nicht ins Repository geschrieben.
 ## Start
 
 ```bash
-cd /Users/hguencavdi/Desktop/it-cockpit/instagram-control-center
+cd /Users/hguencavdi/Desktop/hasi-social-media/instagram-control-center
 npm start
 ```
 

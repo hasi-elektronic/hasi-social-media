@@ -3,7 +3,7 @@
 ## Tek komutluk kurulum
 
 ```bash
-git clone https://github.com/hasi-elektronic/it-cockpit.git
+git clone https://github.com/hasi-elektronic/hasi-social-media.git
 cd it-cockpit
 bash install.sh
 ```

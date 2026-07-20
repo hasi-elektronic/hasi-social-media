@@ -15,9 +15,15 @@
     "Webdesign mit App-Anbindung",
     "Digitaler Hausmeister"
   ],
-  "cadence": {
-    "carousel": "08:00",
-    "reel": "08:30",
-    "story": "09:00"
+  "productionTime": "06:30",
+  "timezone": "Europe/Berlin",
+  "weeklySchedule": {
+    "1": { "storyMorning": "08:00", "carousel": "12:15", "reel": "19:00", "storyEvening": "19:15" },
+    "2": { "storyMorning": "08:00", "carousel": "12:30", "reel": "19:30", "storyEvening": "19:45" },
+    "3": { "storyMorning": "08:15", "carousel": "12:00", "reel": "19:30", "storyEvening": "19:45" },
+    "4": { "storyMorning": "08:00", "carousel": "12:30", "reel": "20:00", "storyEvening": "20:15" },
+    "5": { "storyMorning": "08:30", "carousel": "12:15", "reel": "18:30", "storyEvening": "18:45" },
+    "6": { "storyMorning": "09:30", "carousel": "11:30", "reel": "19:00", "storyEvening": "19:15" },
+    "0": { "storyMorning": "10:00", "carousel": "12:00", "reel": "19:30", "storyEvening": "19:45" }
   }
 }

@@ -5,7 +5,7 @@ import { extname, join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { homedir } from "node:os";
 
-const root = "/Users/hguencavdi/Desktop/it-cockpit";
+const root = "/Users/hguencavdi/Desktop/hasi-social-media";
 const appRoot = join(root, "instagram-control-center");
 const publicRoot = join(appRoot, "public");
 const toolsRoot = join(root, "instagram-karussells", "tools");
@@ -341,6 +341,10 @@ function classifyManifest(file, manifest) {
   return "carousel";
 }
 
+function matchesManifest(entry, file, slug) {
+  return entry?.manifest ? entry.manifest === file : entry?.slug === slug;
+}
+
 async function checkUrl(url) {
   if (!url) return { ok: false, status: 0, type: "" };
   try {
@@ -369,17 +373,20 @@ async function manifests() {
     const checks = await Promise.all(urls.map(checkUrl));
     const published = log.find((entry) => {
       if (entry.status !== "published" && !entry.instagramId) return false;
-      return entry.manifest === file || entry.slug === file.replace(/\.manifest\.json$/, "").replace(/\.(reel|story)$/, "");
+      return matchesManifest(entry, file, file.replace(/\.manifest\.json$/, "").replace(/\.(reel|story)$/, ""));
     });
     const approved = log.find((entry) => {
       if (entry.status !== "approved") return false;
-      return entry.manifest === file || entry.slug === file.replace(/\.manifest\.json$/, "").replace(/\.(reel|story)$/, "");
+      return matchesManifest(entry, file, file.replace(/\.manifest\.json$/, "").replace(/\.(reel|story)$/, ""));
     });
+    const slug = file.replace(/\.manifest\.json$/, "").replace(/\.(reel|story)$/, "");
+    const activity = log.find((entry) => matchesManifest(entry, file, slug) && entry.topic);
     items.push({
       file,
       type,
       path: fullPath,
-      slug: file.replace(/\.manifest\.json$/, "").replace(/\.(reel|story)$/, ""),
+      slug,
+      title: manifest.title || activity?.topic || "",
       caption: manifest.caption || "",
       urlCount: urls.length,
       urls,
@@ -425,12 +432,14 @@ function nextPlan(plan) {
     const date = new Date(now);
     date.setDate(now.getDate() + index);
     const topic = topics[index % topics.length] || "IT-Tipp";
+    const schedule = plan.weeklySchedule?.[String(date.getDay())] || {};
     return {
       date: date.toISOString().slice(0, 10),
       topic,
-      carousel: plan.cadence?.carousel || "08:00",
-      reel: plan.cadence?.reel || "08:30",
-      story: plan.cadence?.story || "09:00",
+      storyMorning: schedule.storyMorning || "08:00",
+      carousel: schedule.carousel || "12:30",
+      reel: schedule.reel || "19:30",
+      storyEvening: schedule.storyEvening || "19:45",
     };
   });
 }
@@ -474,9 +483,9 @@ async function publish(type, file) {
 
   const log = await readJson(logPath, []);
   const slug = safeFile.replace(/\.manifest\.json$/, "").replace(/\.(reel|story)$/, "");
-  const already = log.find((entry) => (entry.status === "published" || entry.instagramId) && (entry.manifest === safeFile || entry.slug === slug));
+  const already = log.find((entry) => (entry.status === "published" || entry.instagramId) && matchesManifest(entry, safeFile, slug));
   if (already) return { ok: true, skipped: true, instagramId: already.instagramId || "", message: "Schon veröffentlicht." };
-  const approved = log.find((entry) => entry.status === "approved" && (entry.manifest === safeFile || entry.slug === slug));
+  const approved = log.find((entry) => entry.status === "approved" && matchesManifest(entry, safeFile, slug));
   if (!approved) return { ok: false, error: "Vor der Veröffentlichung ist eine Freigabe erforderlich." };
 
   const result = await runNodeScript(join(toolsRoot, script), [manifestPath]);
@@ -509,7 +518,7 @@ async function approve(type, file) {
   if (!item.ready) return { ok: false, error: "Der Inhalt ist noch nicht vollständig geprüft." };
 
   const log = await readJson(logPath, []);
-  const existing = log.find((entry) => entry.status === "approved" && (entry.manifest === safeFile || entry.slug === item.slug));
+  const existing = log.find((entry) => entry.status === "approved" && matchesManifest(entry, safeFile, item.slug));
   if (existing) return { ok: true, skipped: true, entry: existing, message: "Bereits freigegeben." };
 
   const entry = {

@@ -5,7 +5,7 @@
 ## 🚀 Mac Kurulum (tek komut)
 
 ```bash
-git clone https://github.com/hasi-elektronic/it-cockpit.git
+git clone https://github.com/hasi-elektronic/hasi-social-media.git
 cd it-cockpit
 bash install.sh
 ```
@@ -41,6 +41,13 @@ D1, schema, secrets, Worker deploy, admin user — hepsi otomatik. ~2 dakika. �
 | v0.3 | Ticket-System (n8n entegrasyonu) |
 | v0.4 | Cybersecurity-Modul (Policy-Compliance-Check) |
 | v0.5 | Reporting-Dashboard + Mobile App |
+
+## 🧭 Codex / NOVA Nutzung
+
+- Agent-Regeln: [AGENTS.md](./AGENTS.md)
+- Professioneller Workflow: [docs/CODEX_WORKFLOW.md](./docs/CODEX_WORKFLOW.md)
+- Wiederverwendbare Kommandos: [docs/CODEX_COMMAND_TEMPLATES.md](./docs/CODEX_COMMAND_TEMPLATES.md)
+- Claude-Projektimport: [docs/CLAUDE_PROJECT_IMPORT.md](./docs/CLAUDE_PROJECT_IMPORT.md)
 
 ## 💰 Preise
 
